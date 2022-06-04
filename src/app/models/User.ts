@@ -13,4 +13,8 @@ export class User {
     this.password = password;
     this.role = role;
   }
+
+  getUserLogged(): User {
+    return JSON.parse(localStorage.getItem('user') || '{}');
+  }
 }

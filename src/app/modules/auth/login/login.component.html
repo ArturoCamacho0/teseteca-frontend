@@ -1,5 +1,19 @@
 <app-alert [message]="message_alert" type="error" *ngIf="error"></app-alert>
 
+<a routerLink="/"
+class="
+  absolute
+  top-5
+  left-5
+  font-bold
+  text-xl
+  text-gray-800
+  no-underline
+  hover:text-gray-600
+  cursor-pointer
+  lex flex-row justify-center items-center
+"><span>< </span>Regresar al inicio</a>
+
 <section class="bg-[#F4F7FF] py-20 lg:py-[120px]">
   <div class="container">
     <div class="flex flex-wrap -mx-4">
@@ -26,6 +40,7 @@
             <div class="mb-6">
               <input type="email" placeholder="Introduce tu correo" name="email" formControlName="email"
                 [ngClass]="{ 'border-red-500 border-2': !user.controls['email'].valid && user.controls['email'].touched || error }"
+                autocomplete="false"
                 class="
                   w-full
                   rounded-md
@@ -77,8 +92,9 @@
             </div>
             <div class="mb-10">
               <app-loading *ngIf="loading"></app-loading>
-              <input type="submit" value="Iniciar sesión" *ngIf="!loading" [disabled]="!user.valid || loading"
-                [ngClass]="{'bg-gray-500 cursor-not-allowed hover:bg-gray-500': !user.valid}" class="
+              <input type="submit" value="Iniciar sesión" *ngIf="!loading" [disabled]="!user.valid"
+                [ngClass]="{'bg-gray-500 cursor-not-allowed hover:bg-gray-500': !user.valid }"
+                class="
                   w-full
                   rounded-md
                   border
