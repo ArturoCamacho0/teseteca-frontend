@@ -1,0 +1,96 @@
+<app-alert [message]="message" [type]="status"></app-alert>
+
+<div *ngIf="open" x-transition class="
+      bg-black bg-opacity-90
+      z-50
+      fixed
+      top-0
+      left-0
+      w-full
+      min-h-screen
+      h-full
+      flex
+      items-center
+      justify-center
+      px-4
+      py-5
+    ">
+  <div class="
+        w-full
+        max-w-[570px]
+        rounded-[20px]
+        bg-white
+        py-12
+        px-8
+        md:py-[60px] md:px-[70px]
+        text-center
+        ">
+
+    <h3 class="font-bold text-dark text-xl sm:text-2xl pb-2">
+      Agrega una nueva clasificaci&oacute;n
+    </h3>
+
+    <span class="inline-block bg-primary h-1 w-[90px] mx-auto rounded mb-6"></span>
+    <div class="mb-12">
+      <form [formGroup]="classification">
+        <input type="text" [disabled]="loading" formControlName="name"
+          placeholder="Introduce el nombre para la clasificacion" class="
+          w-full
+          border-[1.5px] border-form-stroke
+          rounded-lg
+          py-3
+          px-5
+          font-medium
+          text-body-color
+          placeholder-body-color
+          outline-none
+          focus:border-primary
+          active:border-primary
+          transition
+          disabled:bg-[#F5F7FD] disabled:cursor-default
+        ">
+        <span class="text-red-500 text-sm italic">{{ classification.get('name')?.errors ? 'Ingresa la clasificacion' :
+          '' }}</span>
+      </form>
+    </div>
+    <div class="flex flex-wrap -mx-3">
+      <div class="w-1/2 px-3">
+        <button *ngIf="!loading" [disabled]="loading" (click)="closeModal()" class="
+            block
+            text-center
+            w-full
+            p-3
+            text-base
+            font-medium
+            rounded-lg
+            text-dark
+            border border-[#E9EDF9]
+            hover:bg-red-600 hover:text-white hover:border-red-600
+            transition
+          ">
+          Cancelar
+        </button>
+        <app-loading *ngIf="loading"></app-loading>
+      </div>
+      <div class="w-1/2 px-3">
+        <button [disabled]="classification.invalid"
+          [ngClass]="{ 'opacity-50 cursor-not-allowed': classification.invalid }" (click)="save()" class="
+              block
+              text-center
+              w-full
+              p-3
+              text-base
+              font-medium
+              rounded-lg
+              bg-primary
+              text-white
+              border border-primary
+              hover:bg-opacity-90
+              transition
+            ">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

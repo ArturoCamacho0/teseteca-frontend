@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
         const RESPONSE = JSON.parse(JSON.stringify(response));
 
         if(RESPONSE.token && RESPONSE.user) {
-          localStorage.setItem('token', JSON.stringify(RESPONSE.token));
+          localStorage.setItem('token', JSON.stringify(RESPONSE.token)?.replace(/['"]+/g, ''));
           localStorage.setItem('user', JSON.stringify(RESPONSE.user));
           this.router.navigate(['/']);
         }

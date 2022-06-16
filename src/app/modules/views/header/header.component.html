@@ -2,7 +2,7 @@
         {
           navbarOpen: false
         }
-      " class="bg-white w-full flex items-center">
+      " class="bg-white w-full flex items-center fixed z-50">
   <div class="container">
     <div class="flex -mx-4 items-center justify-between relative">
       <div class="px-4 w-60 max-w-full">
@@ -56,8 +56,12 @@
           "
             class="relative mb-8 inline-block text-left"
           >
+            <a
+              *ngIf="isLogged && isAdmin"
+              routerLink="/admin"
+              class="text-xl hover:underline hover:text-black cursor-pointer font-semibold text-primary">Regresar al panel de administrador</a>
             <button
-              *ngIf="isLogged"
+              *ngIf="isLogged && !isAdmin"
               (click)="dropdown = !dropdown"
               class="flex items-center justify-around rounded bg-primary py-3 px-5 text-base font-semibold text-white"
             >
@@ -136,3 +140,6 @@
     </div>
   </div>
 </header>
+
+
+<div class="h-20 w-screen"></div>

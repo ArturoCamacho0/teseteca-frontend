@@ -1,0 +1,76 @@
+<app-delete [open]="deleteModal" (close)="deleteModal = !deleteModal" [id]="idToDelete" (movies)="refresh()"></app-delete>
+
+
+<!-- component -->
+<section class="antialiased bg-gray-100 text-gray-600 h-screen px-4">
+  <div class="flex flex-col justify-center h-full pl-[15%]">
+    <!-- Table -->
+    <div class="w-full max-w-[80vw] mx-auto bg-white shadow-lg rounded-sm border border-gray-200">
+      <header class="px-5 py-4 border-b border-gray-100 flex flex-row justify-between">
+        <h2 class="font-semibold text-gray-800">Pel&iacute;culas</h2>
+        <a routerLink="create" class="text-blue-700 cursor-pointer hover:underline hover:text-blue-500">Agregar pel&iacute;cula</a>
+      </header>
+      <div class="p-3">
+        <div class="overflow-x-auto">
+          <table class="table-auto w-full">
+            <thead class="text-xs font-semibold uppercase text-gray-400 bg-gray-50">
+              <tr>
+                <th class="p-2 whitespace-nowrap text-slate-700">
+                  <div class="font-semibold text-left">Nombre</div>
+                </th>
+                <th class="p-2 whitespace-nowrap text-slate-700">
+                  <div class="font-semibold text-left">Categor&iacute;a</div>
+                </th>
+                <th class="p-2 whitespace-nowrap text-slate-700">
+                  <div class="font-semibold text-left">Estatus</div>
+                </th>
+                <th class="p-2 whitespace-nowrap text-slate-700">
+                  <div class="font-semibold text-center">Fecha de estreno</div>
+                </th>
+                <th class="p-2 whitespace-nowrap text-slate-700">
+                  <div class="font-semibold text-center">Acciones</div>
+                </th>
+              </tr>
+            </thead>
+
+            <div class="flex justify-center w-full items-center m-auto">
+              <app-loading *ngIf="loading"></app-loading>
+            </div>
+
+            <tbody *ngIf="!loading" class="text-sm divide-y divide-gray-100">
+              <tr *ngFor="let movie of movies">
+                <td class="p-2 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="font-medium text-gray-800">{{ movie.title }}</div>
+                  </div>
+                </td>
+                <td class="p-2 whitespace-nowrap">
+                  <div class="text-left">{{ movie.category?.name }}</div>
+                </td>
+                <td class="p-2 whitespace-nowrap">
+                  <div class="text-left font-medium text-green-500" [ngClass]="{'text-green-600': movie.status, 'text-red-600': !movie.status}">
+                    {{ movie.status ? 'Activa' : 'Inactiva' }}
+                  </div>
+                </td>
+                <td class="p-2 whitespace-nowrap">
+                  <div class="text-center">{{ movie.date | moment }}</div>
+                </td>
+
+                <td class="p-2 whitespace-nowrap">
+                  <div class="text-md text-center flex gap-4 flex-row justify-center">
+                    <a routerLink="update/{{ movie.id }}" class="text-blue-700 cursor-pointer hover:underline hover:text-blue-500">Editar</a>
+                    <a (click)="deleteMovie(movie)" class="text-red-700 cursor-pointer hover:underline hover:text-red-500">Eliminar</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="flex justify-center my-6 w-full items-center m-auto" *ngIf="movies.length == 0 && !loading">
+            <p class="text-center text-gray-600 font-bold">No hay pel&iacute;culas todav&iacute;a</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -11,6 +11,7 @@ import { UserService } from 'src/app/services/user/user.service';
 export class HeaderComponent implements OnInit {
   isLogged = false;
   user: User = new User('', '', '', '', 0);
+  isAdmin: boolean = false;
   dropdown: boolean = false;
 
   constructor() {
@@ -22,6 +23,8 @@ export class HeaderComponent implements OnInit {
     this.user = localStorage.getItem('user') ?
       this.user.getUserLogged() :
       new User('', '', '', '', 0);
+
+    this.isAdmin = this.user.role === 0 ? false : true;
 
     console.log(this.user);
   }

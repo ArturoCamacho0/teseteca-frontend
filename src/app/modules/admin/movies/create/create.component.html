@@ -1,0 +1,320 @@
+<app-category [open]="category" (close)="closeModalCategory()"></app-category>
+<app-classification [open]="classification" (close)="closeModalClassification()"></app-classification>
+
+<app-alert [message]="message" [type]="type_alert"></app-alert>
+
+<div class="container flex my-[2rem] min-h-screen ml-[18vw] min-w-screen">
+  <div class="shadow-xl rounded-xl w-4/5 min-h-[80vh] p-5">
+    <h2 class="text-2xl font-bold text-center">Crea una nueva pel&iacute;cula</h2>
+
+    <hr class="my-4" />
+
+    <form (submit)="onSubmit()" [formGroup]="movie" enctype="multipart/form-data">
+      <div class="mb-12">
+        <label for="" class="font-medium text-base text-black font-bold block mb-3">
+          T&iacute;tulo
+        </label>
+        <input [disabled]="loading" type="text" placeholder="Introduce el título de la película" formControlName="title"
+          name="title" class="
+          w-full
+          border-[1.5px] border-form-stroke
+          rounded-lg
+          py-3
+          px-5
+          font-medium
+          text-body-color
+          placeholder-body-color
+          outline-none
+          focus:border-primary
+          active:border-primary
+          transition
+          disabled:bg-[#F5F7FD] disabled:cursor-default
+        ">
+      </div>
+
+      <div class="mb-12">
+        <label for="" class="font-medium text-base text-black block mb-3">
+          Descripci&oacute;n
+        </label>
+        <textarea [disabled]="loading" rows="5" placeholder="Introduce la introducción de la película"
+          formControlName="description" name="description" class="
+          w-full
+          border-[1.5px] border-form-stroke
+          rounded-lg
+          py-3
+          px-5
+          font-medium
+          text-body-color
+          placeholder-body-color
+          outline-none
+          focus:border-primary
+          active:border-primary
+          transition
+          disabled:bg-[#F5F7FD] disabled:cursor-default
+        "></textarea>
+      </div>
+
+      <div class="grid grid-cols-5 gap-4 justify-center items-center">
+        <div class="col-span-5">
+          <div class="mb-12">
+            <label for="" class="font-medium text-base text-black block mb-3">
+              Poster de la pel&iacute;cula
+            </label>
+
+            <upload-dropzone *ngIf="!movie.get('poster')?.value" [uploader]="uploader" [options]="options"
+              [onComplete]="uploadComplete">
+            </upload-dropzone>
+
+            <div class="flex flex-col justify-center items-center"
+              *ngIf="movie.get('poster')?.value && movie.get('poster')?.value !== ''">
+              <img [src]="movie.get('poster')?.value" class="w-auto h-72 mb-4" />
+              <button [disabled]="loading" class="
+                py-4
+                px-10
+                lg:px-8
+                xl:px-10
+                inline-flex
+                items-center
+                justify-center
+                text-center text-primary text-base
+                border border-primary
+                rounded-md
+                hover:bg-primary hover:border-primary hover:text-white
+                transition
+                " (click)="movie.get('poster')?.setValue('')">Cambiar poster</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-4">
+        <div class="mb-12 col-span-2">
+          <label for="" class="font-medium text-base text-black block mb-3">
+            Categor&iacute;a
+          </label>
+          <div class="relative">
+            <select formControlName="category_id" [disabled]="loading" name="category_id" class="
+                w-full
+                border-[1.5px] border-form-stroke
+                rounded-lg
+                py-3
+                px-5
+                font-medium
+                text-body-color
+                outline-none
+                focus:border-primary
+                active:border-primary
+                transition
+                disabled:bg-[#F5F7FD] disabled:cursor-default
+                appearance-none
+                ">
+              <option [selected]="!movie.get('category_id')?.value" value="">Selecciona una categoría...</option>
+              <option *ngFor="let category of categories" value="{{ category.id }}">{{ category.name }}</option>
+            </select>
+            <span class="
+                absolute
+                right-4
+                top-1/2
+                -translate-y-1/2
+                mt-[-2px]
+                w-[10px]
+                h-[10px]
+                border-r-2 border-b-2 border-body-color
+                rotate-45
+                ">
+            </span>
+          </div>
+          <button (click)="categoryModal($event)" [disabled]="loading" class="
+            mt-3
+            p-2
+            inline-flex
+            items-center
+            justify-center
+            text-center text-primary text-base
+            border border-primary
+            rounded-md
+            hover:bg-primary hover:border-primary hover:text-white
+            transition
+          ">
+            Agregar nueva categor&iacute;a
+          </button>
+        </div>
+
+        <div class="mb-12 col-span-2">
+          <label for="" class="font-medium text-base text-black block mb-3">
+            Clasificaci&oacute;n
+          </label>
+          <div class="relative">
+            <select formControlName="classification_id" [disabled]="loading" name="classification_id" class="
+              w-full
+              border-[1.5px] border-form-stroke
+              rounded-lg
+              py-3
+              px-5
+              font-medium
+              text-body-color
+              outline-none
+              focus:border-primary
+              active:border-primary
+              transition
+              disabled:bg-[#F5F7FD] disabled:cursor-default
+              appearance-none
+            ">
+              <option [selected]="!movie.get('classification_id')?.value" value="">Selecciona una clasificación...
+              </option>
+              <option *ngFor="let classification of classifications" value="{{ classification.id }}">{{
+                classification.name }}</option>
+            </select>
+            <span class="
+              absolute
+              right-4
+              top-1/2
+              -translate-y-1/2
+              mt-[-2px]
+              w-[10px]
+              h-[10px]
+              border-r-2 border-b-2 border-body-color
+              rotate-45
+            ">
+            </span>
+          </div>
+          <button (click)="classificationModal($event)" [disabled]="loading" class="
+            mt-3
+            p-2
+            inline-flex
+            items-center
+            justify-center
+            text-center text-primary text-base
+            border border-primary
+            rounded-md
+            hover:bg-primary hover:border-primary hover:text-white
+            transition
+          ">
+            Agregar nueva clasificaci&oacute;n
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-12 grid grid-cols-5 items-center">
+        <div class="col-span-2">
+          <label>Estatus</label>
+          <div class="flex flex-row gap-4 items-center mt-5">
+            <label for="toggleThree" class="flex items-center cursor-pointer select-none">
+              <div class="relative">
+                <input type="checkbox" (change)="status = !status" name="status" id="toggleThree" class="sr-only">
+                <div class="block bg-[#E5E7EB] w-14 h-8 rounded-full"></div>
+                <div class="
+                dot
+                absolute
+                left-1
+                top-1
+                bg-white
+                w-6
+                h-6
+                rounded-full
+                transition
+                flex
+                items-center
+                justify-center
+                ">
+                  <span class="active hidden">
+                    <svg width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
+                        fill="white" stroke="white" stroke-width="0.4"></path>
+                    </svg>
+                  </span>
+                  <span class="inactive text-body-color">
+                    <svg class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                      </path>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </label>
+            <p class="text-sm text-base" [ngClass]="{'text-green-600': status, 'text-red-600': !status}">
+              {{ status ? 'Activa' : 'Inactiva' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="col-span-3">
+          <label>Fecha de estreno</label>
+          <div class="flex flex-row gap-4 items-center mt-5">
+            <input formControlName="date" [disabled]="loading" name="date" type="date" class="
+              border-[1.5px] border-form-stroke
+              rounded-lg
+              w-full
+              py-3
+              px-5
+              font-medium
+              text-body-color
+              outline-none
+              focus:border-primary
+              active:border-primary
+              transition
+              disabled:bg-[#F5F7FD] disabled:cursor-default
+              appearance-none
+            ">
+          </div>
+        </div>
+      </div>
+
+      <hr class="py-4" />
+
+
+
+      <div class="-mx-4 flex flex-wrap justify-center">
+        <div class="w-full px-4 flex justify-between">
+          <button routerLink="/admin/movies" class="
+            block
+            text-center
+            w-fit
+            h-fit
+            py-4
+            px-10
+            lg:px-8
+            xl:px-10
+            text-base
+            font-medium
+            rounded-lg
+            text-dark
+            border border-[#E9EDF9]
+            hover:bg-red-600 hover:text-white hover:border-red-600
+            transition
+          ">Cancelar</button>
+          <div class="mb-14">
+            <div class="group relative inline-block">
+              <input [disabled]="movie.invalid || loading" type="submit" class="
+                py-4
+                px-10
+                lg:px-8
+                xl:px-10
+                inline-flex
+                items-center
+                justify-center
+                text-center text-white text-base
+                bg-secondary
+                hover:bg-opacity-90
+                font-normal
+                rounded-md
+                cursor-pointer
+                justify-self-end
+              " value="Guardar pel&iacute;cula"
+                [ngClass]="{ 'bg-slate-200 cursor-not-allowed': movie.invalid || loading }">
+              <div
+                class="absolute bottom-full left-1/2 z-20 mb-3 -translate-x-1/2 whitespace-nowrap rounded bg-black py-[6px] px-4 text-sm font-semibold text-white opacity-0 group-hover:opacity-100">
+                <span *ngIf="movie.invalid || loading"
+                  class="absolute bottom-[-3px] left-1/2 -z-10 h-2 w-2 -translate-x-1/2 rotate-45 rounded-sm bg-black"></span>
+                Completa todos los campos
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -18,6 +18,7 @@
     "@angular/platform-browser": "~13.3.0",
     "@angular/platform-browser-dynamic": "~13.3.0",
     "@angular/router": "~13.3.0",
+    "angular-uploader": "^6.2.8",
     "moment": "^2.29.3",
     "rxjs": "~7.5.0",
     "swiper": "^8.2.2",
