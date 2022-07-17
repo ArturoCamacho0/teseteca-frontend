@@ -71,7 +71,7 @@ export class CreateComponent implements OnInit {
   };
 
   uploader = new Uploader({
-    apiKey: "public_FW25arS5Nvyz83uikMvDkzQsuouu",
+    apiKey: "public_12a1xn9AiiWBApjJhvHm9nnqU5KW",
   });
 
   uploadComplete = (files: UploaderResult[]) => {

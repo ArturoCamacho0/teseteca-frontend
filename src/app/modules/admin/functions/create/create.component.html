@@ -1,0 +1,201 @@
+<app-cinema [open]="cinema_modal" (close)="closeModalCinema()"></app-cinema>
+
+<app-alert [message]="message" [type]="type_alert"></app-alert>
+
+<div class="container flex my-[2rem] min-h-fit ml-[18vw] min-w-screen">
+  <div class="shadow-xl rounded-xl w-4/5 min-h-[80vh] p-5">
+    <a class="text-2xl hover:text-red-400" routerLink="/admin/functions">X</a>
+    <h2 class="text-2xl font-bold text-center">Funciones de {{ movie.title }}</h2>
+
+    <hr class="my-4" />
+
+    <div class="grid grid-cols-5 gap-4" *ngIf="movie">
+      <div class="col-span-2 flex justify-center">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="w-auto h-96" />
+      </div>
+
+      <div class="col-span-3">
+        <div class="col-span-3">
+          <label class="text-xl font-bold">Fecha</label>
+          <div class="flex flex-row gap-4 items-center mt-5">
+            <input [(ngModel)]="date" name="date" type="date" [min]="today" class="
+              border-[1.5px] border-form-stroke
+              rounded-lg
+              w-full
+              py-3
+              px-5
+              font-medium
+              text-body-color
+              outline-none
+              focus:border-primary
+              active:border-primary
+              transition
+              disabled:bg-[#F5F7FD] disabled:cursor-default
+              appearance-none
+            ">
+          </div>
+
+          <div class="flex flex-col mt-8 ">
+            <label class="text-xl font-bold mb-4">Horas</label>
+            <div class="flex flex-row group relative gap-2 inline-block w-fit">
+              <p *ngIf="hours.length === 0" class="text-base text-gray-600 ">A&uacute;n no tiene horas registradas</p>
+              <span *ngFor="let hour_s of hours"
+                class="px-4 py-2 text-base rounded-full text-black w-fit border border-primary flex flex-row">
+                {{ hour_s }}
+                <button (click)="removeHour(hour_s)"
+                  class="bg-transparent hover:text-red-400 flex justify-center items-center flex-row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="ml-4"
+                    viewBox="0 0 1792 1792">
+                    <path
+                      d="M1490 1322q0 40-28 68l-136 136q-28 28-68 28t-68-28l-294-294-294 294q-28 28-68 28t-68-28l-136-136q-28-28-28-68t28-68l294-294-294-294q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294 294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68l-294 294 294 294q28 28 28 68z">
+                    </path>
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="w-full flex flex-col items-end">
+              <div class="mb-4 w-fit">
+                <input type="time" [(ngModel)]="hour" placeholder="Default Input" class="
+                    w-full
+                    border-[1.5px] border-form-stroke
+                    rounded-lg
+                    py-3
+                    px-5
+                    font-medium
+                    text-body-color
+                    placeholder-body-color
+                    outline-none
+                    focus:border-primary
+                    active:border-primary
+                    transition
+                    disabled:bg-[#F5F7FD] disabled:cursor-default
+                    ">
+              </div>
+              <button (click)="addHour()" [disabled]="!hour"
+                [ngClass]="{ 'cursor-not-allowed bg-slate-200 hover:bg-slate-200': !hour }" class="
+                  mb-5
+                  self-end
+                  p-3
+                  inline-flex
+                  items-center
+                  justify-center
+                  text-center text-primary text-base
+                  border border-primary
+                  rounded-md
+                  hover:bg-primary hover:border-primary hover:text-white
+                  transition
+                ">
+                Agregar hora
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-5 grid grid-cols-7 gap-6">
+            <div class="col-span-2">
+              <label for="price" class="text-xl font-bold mb-4">
+                Precio
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 sm:text-sm">
+                    $
+                  </span>
+                </div>
+                <input type="number" name="price" id="price" [(ngModel)]="price"
+                  class="focus:ring-indigo-500 border-l border-b border-t border-gray-300 py-3 px-4 focus:border-indigo-500 block w-full pl-7  sm:text-sm rounded-md"
+                  placeholder="0.00" />
+                <div class="absolute inset-y-0 right-0 flex items-center">
+                  <label for="currency" class="sr-only">
+                    Currency
+                  </label>
+                  <span
+                    class="focus:ring-indigo-500 py-3 px-4 border-t border-r border-gray-300 border-b bo focus:border-indigo-500 h-full pl-2 pr-7 border-transparent bg-transparent text-gray-500 sm:text-sm rounded-r-md">
+                    MXN
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-span-3">
+              <label for="price" class="text-xl font-bold mb-4">
+                Cine
+              </label>
+              <div class="relative">
+                <select [(ngModel)]="cinema_id" class="
+                  w-full
+                  border-[1.5px] border-form-stroke
+                  rounded-lg
+                  py-3
+                  px-5
+                  font-medium
+                  text-body-color
+                  outline-none
+                  focus:border-primary
+                  active:border-primary
+                  transition
+                  disabled:bg-[#F5F7FD] disabled:cursor-default
+                  appearance-none
+                ">
+                  <option selected value="0">Selecciona un cine...</option>
+                  <option *ngFor="let cinema of cinemas" value="{{ cinema.id }}">{{ cinema.location }}</option>
+                </select>
+                <span class="
+                  absolute
+                  right-4
+                  top-1/2
+                  -translate-y-1/2
+                  mt-[-2px]
+                  w-[10px]
+                  h-[10px]
+                  border-r-2 border-b-2 border-body-color
+                  rotate-45
+                ">
+                </span>
+              </div>
+            </div>
+
+            <div class="col-span-2 flex items-end">
+              <button (click)="cinema_modal = true" class="
+              w-full
+              p-3
+              inline-flex
+              items-center
+              justify-center
+              text-center text-white text-base
+              bg-primary
+              hover:bg-opacity-90
+              font-normal
+              rounded-md
+            ">
+                Agregar cine
+              </button>
+            </div>
+          </div>
+
+        </div>
+        <app-loading *ngIf="loading"></app-loading>
+        <button *ngIf="!loading" [disabled]="hours.length === 0 || !date" (click)="saveFunction()"
+          [ngClass]="{ 'cursor-not-allowed bg-slate-200 hover:bg-slate-200': hours.length === 0 || !date }" class="
+          py-4
+          px-10
+          lg:px-8
+          xl:px-10
+          inline-flex
+          items-center
+          justify-center
+          text-center text-white text-base
+          bg-secondary
+          hover:bg-opacity-90
+          font-normal
+          rounded-md
+          w-full
+        ">
+          Guardar funci&oacute;n
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

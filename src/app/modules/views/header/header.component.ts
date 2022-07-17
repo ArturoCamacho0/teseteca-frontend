@@ -25,8 +25,6 @@ export class HeaderComponent implements OnInit {
       new User('', '', '', '', 0);
 
     this.isAdmin = this.user.role === 0 ? false : true;
-
-    console.log(this.user);
   }
 
   logout() {

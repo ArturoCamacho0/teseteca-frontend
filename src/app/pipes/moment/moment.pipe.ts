@@ -17,6 +17,10 @@ export class MomentPipe implements PipeTransform {
       return moment(value).calendar();
     }
 
+    if(args[0] === 'future') {
+      return moment(value).format('dddd LL');
+    }
+
     return moment(value).format('LL');
   }
 

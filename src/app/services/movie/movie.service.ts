@@ -8,7 +8,7 @@ import { Movie } from 'src/app/models/Movie';
   providedIn: 'root'
 })
 export class MovieService {
-  url: string = environment.url + 'movies/';
+  url: string = environment.url + 'movies';
   token: string | null = '';
   headers: HttpHeaders;
 
@@ -21,6 +21,7 @@ export class MovieService {
       'Authorization': `Bearer ${this.token}`,
       'Accept': 'application/json',
       'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
     });
   }
 
@@ -29,7 +30,7 @@ export class MovieService {
   }
 
   getById(id: number): Observable<Movie> {
-    return this.http.get<Movie>(this.url + id, { headers: this.headers });
+    return this.http.get<Movie>(this.url + '/' + id, { headers: this.headers });
   }
 
   create(movie: Movie): Observable<Movie> {
@@ -37,10 +38,10 @@ export class MovieService {
   }
 
   update(movie: Movie): Observable<Movie> {
-    return this.http.put<Movie>(this.url + movie.id, movie, { headers: this.headers });
+    return this.http.put<Movie>(this.url + '/' + movie.id, movie, { headers: this.headers });
   }
 
   delete(id: number): Observable<Movie> {
-    return this.http.delete<Movie>(this.url + id, { headers: this.headers });
+    return this.http.delete<Movie>(this.url + '/' + id, { headers: this.headers });
   }
 }

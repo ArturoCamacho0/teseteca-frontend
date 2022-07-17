@@ -1,4 +1,4 @@
-import { MomentPipe } from './../../../pipes/moment/moment.pipe';
+import { PipesModule } from './../../../pipes/pipes.module';
 import { ComponentsModule } from './../../../components/components.module';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
@@ -22,8 +22,7 @@ import { DeleteComponent } from './delete/delete.component';
     UpdateComponent,
     CategoryComponent,
     ClassificationComponent,
-    DeleteComponent,
-    MomentPipe
+    DeleteComponent
   ],
   imports: [
     CommonModule,
@@ -33,7 +32,7 @@ import { DeleteComponent } from './delete/delete.component';
     HttpClientModule,
     UploaderModule,
     ComponentsModule,
-
+    PipesModule
   ]
 })
 export class MoviesModule { }

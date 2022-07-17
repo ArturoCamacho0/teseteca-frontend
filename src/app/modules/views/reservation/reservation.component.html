@@ -1,0 +1,320 @@
+<app-alert [message]="message" [type]="type" *ngIf="message"></app-alert>
+
+<div class="mt-10 flex flex-row justify-center items-center ">
+  <div class="w-1/2 h-full">
+    <igx-stepper #stepper [orientation]="'vertical'" class="mt-10">
+      <igx-step>
+        <p igxStepTitle>Fecha</p>
+        <div igxStepContent>
+          <div class="flex flex-wrap -mx-4">
+            <div class="w-full px-4">
+              <div class="mb-12">
+                <label for="" class="font-medium text-base text-black block mb-3">
+                  Fecha de reservaci&oacute;n
+                </label>
+                <div class="relative">
+                  <select [(ngModel)]="id_date" (ngModelChange)="getDatesHours()" class="
+                        w-full
+                        border-[1.5px] border-form-stroke
+                        rounded-lg
+                        py-3
+                        px-5
+                        font-medium
+                        text-body-color
+                        outline-none
+                        focus:border-primary
+                        active:border-primary
+                        transition
+                        disabled:bg-[#F5F7FD] disabled:cursor-default
+                        appearance-none
+                        ">
+                    <option value="0" selected>Selecciona una fecha...</option>
+                    <option *ngFor="let date of dates" value="{{date.id}}">
+                      {{ date.date | moment:'future' }}
+                    </option>
+                  </select>
+                  <span class="
+                        absolute
+                        right-4
+                        top-1/2
+                        -translate-y-1/2
+                        mt-[-2px]
+                        w-[10px]
+                        h-[10px]
+                        border-r-2 border-b-2 border-body-color
+                        rotate-45
+                        ">
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-row justify-end">
+            <button [disabled]="id_date <= 0" (click)="stepper.next(); getDatesHours()" class="
+              p-2
+              inline-flex
+              items-center
+              justify-center
+              text-center text-white text-base
+              bg-primary
+              hover:bg-opacity-90
+              font-normal
+              rounded-md
+            ">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </igx-step>
+      <igx-step [disabled]="id_date <= 0">
+        <p igxStepTitle>Horario</p>
+        <div igxStepContent>
+          <label for="" class="font-medium text-base text-black block mb-3">
+            Selecciona el horario de reservaci&oacute;n
+          </label>
+
+          <div class="mb-4 pb-3 border-b border-[#F2F2F2] flex flex-row gap-3">
+            <button (click)="setHour(hour)" *ngFor="let hour of hours"
+              class="px-6 py-2 text-sm transition ease-in duration-200 uppercase rounded-full hover:bg-gray-800 hover:text-white border-2 border-gray-900 focus:outline-none"
+              [ngClass]="{ 'bg-gray-800 text-white' : id_hour === hour.id }">
+              {{ hour.hour }}
+            </button>
+          </div>
+
+
+          <div class="flex flex-row justify-between">
+            <button (click)="stepper.prev()" class="
+              p-2
+              inline-flex
+              items-center
+              justify-center
+              text-center text-black text-base
+              border border-black
+              rounded-md
+              hover:bg-black hover:border-black hover:text-white
+              transition
+            ">
+              Anterior
+            </button>
+            <button [disabled]="id_hour <= 0" (click)="stepper.next()" class="
+              p-2
+              inline-flex
+              items-center
+              justify-center
+              text-center text-white text-base
+              bg-primary
+              hover:bg-opacity-90
+              font-normal
+              rounded-md
+            ">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </igx-step>
+
+
+      <igx-step [disabled]="id_hour <= 0">
+        <p igxStepTitle>Boletos</p>
+        <div igxStepContent>
+          <label for="" class="font-medium text-base text-black block mb-3">
+            Ingresa la cantidad de boletos a reservar (M&aacute;ximo 10)
+          </label>
+          <div class="flex relative w-52">
+            <button (click)="sub()"
+              class="rounded-l-md flex items-center justify-center inline-flex text-xl items-center px-3 border-t bg-white border-l border-b  border-gray-300 text-gray-500 shadow-sm text-sm">
+              -
+            </button>
+            <input type="number" id="email-with-icon" [(ngModel)]="tikets" readonly="readonly"
+              class="flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base"
+              name="tickets" placeholder="0" />
+            <button (click)="sum()"
+              class="rounded-r-md flex items-center justify-center inline-flex text-xl items-center px-3 border-t bg-white border-r border-b  border-gray-300 text-gray-500 shadow-sm text-sm">
+              +
+            </button>
+          </div>
+          <div class="flex flex-row justify-between mt-5">
+            <button (click)="stepper.prev()" class="
+              p-2
+              inline-flex
+              items-center
+              justify-center
+              text-center text-black text-base
+              border border-black
+              rounded-md
+              hover:bg-black hover:border-black hover:text-white
+              transition
+            ">
+              Anterior
+            </button>
+            <button [disabled]="tikets <= 0" (click)="stepper.next()" class="
+              p-2
+              inline-flex
+              items-center
+              justify-center
+              text-center text-white text-base
+              bg-primary
+              hover:bg-opacity-90
+              font-normal
+              rounded-md
+            ">
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </igx-step>
+
+      <igx-step [disabled]="tikets <= 0">
+        <p igxStepTitle>Asientos</p>
+        <div igxStepContent class="flex flex-col justify-center items-center">
+          <label for="" class="font-medium text-base text-black block mb-3">
+            Selecciona los asientos
+          </label>
+          <table class="w-full p-5 grid gap-3">
+            <tr class="flex flex-row justify-between px-3">
+              <td></td>
+              <td *ngFor="let row of rows" class="text-center font-bold">{{ row }}</td>
+            </tr>
+            <tr *ngFor="let col of cols" class="flex flex-row justify-around">
+              <td class="font-bold">
+                {{ col }}
+              </td>
+              <td *ngFor="let row of rows" class="flex flex-col justify-center items-center border-b-8"
+                [ngClass]="{'border-indigo-700': isSelected(col + row) }">
+                <p class="text-xs">{{ col + row }}</p>
+                <i class="fa-solid fa-couch w-full hover:text-indigo-700 cursor-pointer text-2xl text-slate-500"
+                  (click)="selectSeat(col + row)" [ngClass]="{'text-indigo-700': isSelected(col + row)}"></i>
+              </td>
+            </tr>
+          </table>
+
+          <div class=" flex justify-center">
+            <span class="text-lg font-bold text-indigo-700">Pantalla</span>
+          </div>
+          <div class="w-11/12 h-5 bg-indigo-700"></div>
+        </div>
+      </igx-step>
+    </igx-stepper>
+  </div>
+
+  <div class="w-full h-full flex flex-col justify-center items-center md:w-1/2 px-4"></div>
+
+
+  <div class="w-full h-full md:w-1/2 px-4 fixed right-4 top-[25%] z-[1000]">
+    <div class="
+      bg-white
+      rounded-xl
+      relative
+      z-10
+      overflow-hidden
+      border border-primary border-opacity-20
+      shadow-xl
+      py-10
+      px-8
+      sm:p-12
+      lg:py-10 lg:px-6
+      xl:p-12
+      mb-10
+    ">
+      <span class="text-primary font-semibold text-lg block mb-4">
+        {{ movie.title }}
+      </span>
+      <h2 class="font-bold text-dark mb-5 text-[42px]">
+        {{ price * tikets | currency:'MXN' }} <span class="text-xl text-base text-body-color">X {{ tikets }} Boletos</span>
+      </h2>
+      <p *ngIf="string_date !== ''" class="
+          text-base text-body-color
+          pb-8
+          mb-8
+          border-b border-[#F2F2F2]
+          ">
+        {{ string_date | moment:'future' }} | {{ string_hour }}
+      </p>
+      <p *ngIf="string_date === ''" class="
+          text-base text-body-color
+          pb-8
+          mb-8
+          border-b border-[#F2F2F2]
+          ">
+      </p>
+
+      <div class="mb-5">
+        <span class="text-black font-bold">Asientos:</span>&nbsp;
+        <span class="text-base text-body-color leading-loose mb-1" *ngFor="let seat of listAsientos">
+          {{ seat }},&nbsp;
+        </span>
+      </div>
+
+      <div class="mb-7">
+      <app-loading *ngIf="loading"></app-loading>
+      <button (click)="saveReservation()" *ngIf="!loading"
+        [ngClass]="{'text-black cursor-not-allowed bg-gray-300 hover:bg-gray-300':listAsientos.length !== tikets || listAsientos.length <= 0}"
+        [disabled]="listAsientos.length !== tikets || listAsientos.length <= 0" class="
+          w-full
+          block
+          text-base
+          font-semibold
+          text-white
+          bg-primary
+          border border-primary
+          rounded-md
+          text-center
+          p-4
+          hover:bg-opacity-90
+          transition
+          ">
+        Confirmar la compra
+      </button>
+      <div>
+        <span class="absolute right-0 top-7 z-[-1]">
+          <svg width="77" height="172" viewBox="0 0 77 172" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="86" cy="86" r="86" fill="url(#paint0_linear)" />
+            <defs>
+              <linearGradient id="paint0_linear" x1="86" y1="0" x2="86" y2="172" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#3056D3" stop-opacity="0.09" />
+                <stop offset="1" stop-color="#C4C4C4" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="absolute right-4 top-4 z-[-1]">
+          <svg width="41" height="89" viewBox="0 0 41 89" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="38.9138" cy="87.4849" r="1.42021" transform="rotate(180 38.9138 87.4849)" fill="#3056D3" />
+            <circle cx="38.9138" cy="74.9871" r="1.42021" transform="rotate(180 38.9138 74.9871)" fill="#3056D3" />
+            <circle cx="38.9138" cy="62.4892" r="1.42021" transform="rotate(180 38.9138 62.4892)" fill="#3056D3" />
+            <circle cx="38.9138" cy="38.3457" r="1.42021" transform="rotate(180 38.9138 38.3457)" fill="#3056D3" />
+            <circle cx="38.9138" cy="13.634" r="1.42021" transform="rotate(180 38.9138 13.634)" fill="#3056D3" />
+            <circle cx="38.9138" cy="50.2754" r="1.42021" transform="rotate(180 38.9138 50.2754)" fill="#3056D3" />
+            <circle cx="38.9138" cy="26.1319" r="1.42021" transform="rotate(180 38.9138 26.1319)" fill="#3056D3" />
+            <circle cx="38.9138" cy="1.42021" r="1.42021" transform="rotate(180 38.9138 1.42021)" fill="#3056D3" />
+            <circle cx="26.4157" cy="87.4849" r="1.42021" transform="rotate(180 26.4157 87.4849)" fill="#3056D3" />
+            <circle cx="26.4157" cy="74.9871" r="1.42021" transform="rotate(180 26.4157 74.9871)" fill="#3056D3" />
+            <circle cx="26.4157" cy="62.4892" r="1.42021" transform="rotate(180 26.4157 62.4892)" fill="#3056D3" />
+            <circle cx="26.4157" cy="38.3457" r="1.42021" transform="rotate(180 26.4157 38.3457)" fill="#3056D3" />
+            <circle cx="26.4157" cy="13.634" r="1.42021" transform="rotate(180 26.4157 13.634)" fill="#3056D3" />
+            <circle cx="26.4157" cy="50.2754" r="1.42021" transform="rotate(180 26.4157 50.2754)" fill="#3056D3" />
+            <circle cx="26.4157" cy="26.1319" r="1.42021" transform="rotate(180 26.4157 26.1319)" fill="#3056D3" />
+            <circle cx="26.4157" cy="1.4202" r="1.42021" transform="rotate(180 26.4157 1.4202)" fill="#3056D3" />
+            <circle cx="13.9177" cy="87.4849" r="1.42021" transform="rotate(180 13.9177 87.4849)" fill="#3056D3" />
+            <circle cx="13.9177" cy="74.9871" r="1.42021" transform="rotate(180 13.9177 74.9871)" fill="#3056D3" />
+            <circle cx="13.9177" cy="62.4892" r="1.42021" transform="rotate(180 13.9177 62.4892)" fill="#3056D3" />
+            <circle cx="13.9177" cy="38.3457" r="1.42021" transform="rotate(180 13.9177 38.3457)" fill="#3056D3" />
+            <circle cx="13.9177" cy="13.634" r="1.42021" transform="rotate(180 13.9177 13.634)" fill="#3056D3" />
+            <circle cx="13.9177" cy="50.2754" r="1.42021" transform="rotate(180 13.9177 50.2754)" fill="#3056D3" />
+            <circle cx="13.9177" cy="26.1319" r="1.42021" transform="rotate(180 13.9177 26.1319)" fill="#3056D3" />
+            <circle cx="13.9177" cy="1.42019" r="1.42021" transform="rotate(180 13.9177 1.42019)" fill="#3056D3" />
+            <circle cx="1.41963" cy="87.4849" r="1.42021" transform="rotate(180 1.41963 87.4849)" fill="#3056D3" />
+            <circle cx="1.41963" cy="74.9871" r="1.42021" transform="rotate(180 1.41963 74.9871)" fill="#3056D3" />
+            <circle cx="1.41963" cy="62.4892" r="1.42021" transform="rotate(180 1.41963 62.4892)" fill="#3056D3" />
+            <circle cx="1.41963" cy="38.3457" r="1.42021" transform="rotate(180 1.41963 38.3457)" fill="#3056D3" />
+            <circle cx="1.41963" cy="13.634" r="1.42021" transform="rotate(180 1.41963 13.634)" fill="#3056D3" />
+            <circle cx="1.41963" cy="50.2754" r="1.42021" transform="rotate(180 1.41963 50.2754)" fill="#3056D3" />
+            <circle cx="1.41963" cy="26.1319" r="1.42021" transform="rotate(180 1.41963 26.1319)" fill="#3056D3" />
+            <circle cx="1.41963" cy="1.4202" r="1.42021" transform="rotate(180 1.41963 1.4202)" fill="#3056D3" />
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>

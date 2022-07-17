@@ -74,7 +74,7 @@ export class UpdateComponent implements OnInit {
   };
 
   uploader = new Uploader({
-    apiKey: "public_FW25arS5Nvyz83uikMvDkzQsuouu",
+    apiKey: "public_12a1xn9AiiWBApjJhvHm9nnqU5KW",
   });
 
   uploadComplete = (files: UploaderResult[]) => {
@@ -187,7 +187,7 @@ export class UpdateComponent implements OnInit {
       this.movie.get('title')?.value || '',
       this.movie.get('description')?.value || '',
       this.movie.get('poster')?.value || '',
-      this.movie.get('status')?.value || '',
+      this.status,
       this.movie.get('date')?.value || '',
       this.movie.get('category_id')?.value || '',
       this.movie.get('classification_id')?.value || ''
