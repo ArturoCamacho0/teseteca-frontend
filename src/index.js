@@ -6,10 +6,13 @@ import {
   Navigate,
 } from "react-router-dom";
 import "./index.css";
+import store from './store';
 
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import { Provider } from "react-redux";
 
 const router = createBrowserRouter([
   {
@@ -24,11 +27,15 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  <Provider store={store}>
     <Header />
     <RouterProvider router={router} />
-  </React.StrictMode>
+  </Provider>
 );

@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import {
     TextInput,
     Button,
     InlineLoading
 } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
-import './index.css'; // Import the CSS file
+import './index.css';
+import { loginRequest, loginSuccess, loginFailure } from '../../actions/authActions';
+
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
@@ -13,13 +16,40 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleLogin = () => {
-        setLoading(true);
+    useEffect(() => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmailValid = regex.test(username);
+        const isFieldsEmpty = username === '' || password === '';
 
-        setTimeout(() => {
-            setLoading(false);
-            console.log('Login clicked');
-        }, 2000);
+        setError(isFieldsEmpty ? "Debes completar todos los campos" : isEmailValid ? "" : "Introduce un email válido");
+    }, [username, password]);
+
+    const handleLogin = async () => {
+        try {
+            setLoading(true);
+            // Realiza la solicitud de inicio de sesión a la API y obtén el token
+            loginRequest();
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Guarda el token en el estado utilizando la acción loginSuccess
+                loginSuccess(data.token);
+            } else {
+                // Maneja el error utilizando la acción loginFailure
+                loginFailure(data.error);
+            }
+        } catch (error) {
+            // Maneja errores de red u otros errores
+            loginFailure('Error de conexión');
+        }
+        setLoading(false);
     };
 
     return (
@@ -28,7 +58,7 @@ const LoginPage = () => {
                 <h1 className="login-heading">Inicia sesi&oacute;n para continuar</h1>
                 <div className="input-container">
                     <TextInput
-                        id="username"
+                        id="email"
                         disabled={loading}
                         labelText="Usuario"
                         value={username}
@@ -46,13 +76,6 @@ const LoginPage = () => {
                         labelText="Contraseña"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        onBlur={() => {
-                            if (password.length < 8) {
-                                setError('La contraseña debe tener al menos 8 caracteres');
-                            } else {
-                                setError('');
-                            }
-                        }}
                         className="login-input"
                         size="xl"
                     />
@@ -65,10 +88,11 @@ const LoginPage = () => {
                         onClick={handleLogin}
                         className="login-button"
                         renderIcon={ArrowRight}
-                        disabled={loading || username === '' || password.length < 8}
+                        disabled={loading || error !== ''}
                     >
                         Continuar
-                    </Button>}
+                    </Button>
+                }
                 <p className="register-link">
                     ¿No tienes cuenta? <a href="/register">Registrate</a>
                 </p>
@@ -77,4 +101,15 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+const mapStateToProps = (state) => ({
+    token: state.auth.token,
+    error: state.auth.error,
+});
+
+const mapDispatchToProps = {
+    loginRequest,
+    loginSuccess,
+    loginFailure,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);

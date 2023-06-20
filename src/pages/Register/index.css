@@ -1,6 +1,6 @@
-/* LoginPage.css */
+/* registerPage.css */
 
-.login-page {
+.register-page {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,14 +8,14 @@
     background-color: #f3f3f3;
 }
 
-.login-container {
+.register-container {
     background-color: #ffffff;
     padding: 40px;
     border-radius: 4px;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
 }
 
-.login-heading {
+.register-heading {
     margin-bottom: 40px;
     font-size: 24px;
     font-weight: 600;
@@ -25,12 +25,12 @@
     margin-bottom: 24px;
 }
 
-.login-input {
+.register-input {
     width: 40vw;
     padding: 8px;
 }
 
-.login-button {
+.register-button {
     margin-top: 24px;
     margin-bottom: 24px;
     margin-left: 0;
