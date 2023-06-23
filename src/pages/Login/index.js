@@ -1,61 +1,77 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import {
     TextInput,
     Button,
-    InlineLoading
+    ButtonSkeleton,
+    InlineNotification,
 } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../../actions/authActions';
 import './index.css';
-import { loginRequest, loginSuccess, loginFailure } from '../../actions/authActions';
-
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [validationError, setValidationError] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isEmailValid = regex.test(username);
+        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username);
         const isFieldsEmpty = username === '' || password === '';
 
-        setError(isFieldsEmpty ? "Debes completar todos los campos" : isEmailValid ? "" : "Introduce un email válido");
+        setValidationError(
+            isFieldsEmpty
+                ? 'Debes completar todos los campos'
+                : isEmailValid
+                    ? ''
+                    : 'Introduce un email válido'
+        );
     }, [username, password]);
 
-    const handleLogin = async () => {
-        try {
+    const handleLogin = () => {
+        setError('');
+        if (!validationError) {
             setLoading(true);
-            // Realiza la solicitud de inicio de sesión a la API y obtén el token
-            loginRequest();
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                body: JSON.stringify({ username, password }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            const data = await response.json();
 
-            if (response.ok) {
-                // Guarda el token en el estado utilizando la acción loginSuccess
-                loginSuccess(data.token);
-            } else {
-                // Maneja el error utilizando la acción loginFailure
-                loginFailure(data.error);
-            }
-        } catch (error) {
-            // Maneja errores de red u otros errores
-            loginFailure('Error de conexión');
+            const loginData = {
+                email: username,
+                password: password,
+            };
+
+            axios
+                .post('https://tesegewalt.website/api/login', loginData)
+                .then((response) => {
+                    setLoading(false);
+                    const data = response.data;
+                    if (data.token) {
+                        dispatch(loginSuccess(data.token, data.user));
+                        navigate('/home');
+                    } else {
+                        setError(data.error);
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    //setError(error.response.status === 401 ? 'El usuario o contraseña es incorrecto' : error.response.data.message);
+                    setLoading(false);
+                });
         }
-        setLoading(false);
+    };
+
+    const handleNotificationClose = () => {
+        setError('');
     };
 
     return (
         <div className="login-page">
             <div className="login-container">
-                <h1 className="login-heading">Inicia sesi&oacute;n para continuar</h1>
+                <h1 className="login-heading">Inicia sesión para continuar</h1>
                 <div className="input-container">
                     <TextInput
                         id="email"
@@ -64,8 +80,8 @@ const LoginPage = () => {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="login-input"
-                        size="xl"
-                        type='email'
+                        size="lg"
+                        type="email"
                     />
                 </div>
                 <div className="input-container">
@@ -77,39 +93,41 @@ const LoginPage = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="login-input"
-                        size="xl"
+                        size="lg"
                     />
-                    {error !== '' && <span className="error-message">{error}</span>}
+                    {validationError !== '' && (
+                        <span className="error-message">{validationError}</span>
+                    )}
                 </div>
 
-                {loading ?
-                    <InlineLoading description="Cargando..." /> :
+                {loading ? (
+                    <ButtonSkeleton className="login-button" />
+                ) : (
                     <Button
                         onClick={handleLogin}
                         className="login-button"
                         renderIcon={ArrowRight}
-                        disabled={loading || error !== ''}
+                        disabled={loading || validationError !== ''}
                     >
                         Continuar
                     </Button>
-                }
+                )}
                 <p className="register-link">
-                    ¿No tienes cuenta? <a href="/register">Registrate</a>
+                    ¿No tienes cuenta? <a href="/register">Regístrate</a>
                 </p>
             </div>
+            {error !== '' && (
+                <div className="fixed-notification">
+                    <InlineNotification
+                        title="Error"
+                        subtitle={error}
+                        kind="error"
+                        onClose={handleNotificationClose}
+                    />
+                </div>
+            )}
         </div>
     );
 };
 
-const mapStateToProps = (state) => ({
-    token: state.auth.token,
-    error: state.auth.error,
-});
-
-const mapDispatchToProps = {
-    loginRequest,
-    loginSuccess,
-    loginFailure,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);
+export default LoginPage;

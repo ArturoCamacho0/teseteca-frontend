@@ -9,9 +9,21 @@ import {
     HeaderGlobalAction,
     SkipToContent,
 } from '@carbon/react';
-import { NotificationFilled, Search } from '@carbon/icons-react';
+import { NotificationFilled, Search, Logout } from '@carbon/icons-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../actions/authActions';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const token = useSelector((state) => state.auth.token);
+
+    const handleLogout = () => {
+        dispatch(logout(token));
+        navigate('/login');
+    };
+
     return (
         <CarbonHeader aria-label="Header">
             <SkipToContent />
@@ -23,41 +35,52 @@ const Header = () => {
                 }}
             />
 
-            <HeaderName href="#" prefix="Gewalt" >
+            <HeaderName prefix="Gewalt" >
                 [Administraci&oacute;n de proyectos]
             </HeaderName>
 
-            <HeaderNavigation aria-label="Navigation">
-                <HeaderMenuItem href="#">
-                    Inicio
-                </HeaderMenuItem>
-                <HeaderMenuItem href="#">
-                    Proyectos
-                </HeaderMenuItem>
-                <HeaderMenuItem href="#">
-                    Equipos
-                </HeaderMenuItem>
-            </HeaderNavigation>
+            {token &&
+                <>
+                    <HeaderNavigation aria-label="Navigation">
+                        <HeaderMenuItem href="/home">
+                            Inicio
+                        </HeaderMenuItem>
+                        <HeaderMenuItem href="/projects">
+                            Proyectos
+                        </HeaderMenuItem>
+                        <HeaderMenuItem href="#">
+                            Equipos
+                        </HeaderMenuItem>
+                    </HeaderNavigation>
 
-            <HeaderGlobalBar>
-                <HeaderGlobalAction
-                    aria-label="Notificaciones"
-                    onClick={() => {
-                        // Handle notification action click
-                    }}
-                >
-                    <NotificationFilled />
-                </HeaderGlobalAction>
+                    <HeaderGlobalBar>
+                        <HeaderGlobalAction
+                            aria-label="Notificaciones"
+                            onClick={() => {
+                                // Handle notification action click
+                            }}
+                        >
+                            <NotificationFilled />
+                        </HeaderGlobalAction>
 
-                <HeaderGlobalAction
-                    aria-label="Buscar"
-                    onClick={() => {
-                        // Handle switcher action click
-                    }}
-                >
-                    <Search />
-                </HeaderGlobalAction>
-            </HeaderGlobalBar>
+                        <HeaderGlobalAction
+                            aria-label="Buscar"
+                            onClick={() => {
+                                // Handle switcher action click
+                            }}
+                        >
+                            <Search />
+                        </HeaderGlobalAction>
+
+                        <HeaderGlobalAction
+                            aria-label="Cerrar sesi&oacute;n"
+                            onClick={handleLogout}
+                        >
+                            <Logout />
+                        </HeaderGlobalAction>
+                    </HeaderGlobalBar>
+                </>
+            }
         </CarbonHeader>
     );
 };

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import {
     TextInput,
     Button,
-    InlineLoading
+    ButtonSkeleton
 } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
 import './index.css';
@@ -33,7 +33,7 @@ const RegisterPage = () => {
             setLoading(true);
             // Realize the register request to the API and obtain the token
             registerRequest();
-            const response = await fetch('localhost:80/api/register', {
+            const response = await fetch('https://localhost:80/api/register', {
                 method: 'POST',
                 body: JSON.stringify({ username, password, name, lastName }),
                 headers: {
@@ -68,7 +68,7 @@ const RegisterPage = () => {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="register-input"
-                        size="xl"
+                        size="lg"
                         type='text'
                     />
                 </div>
@@ -80,7 +80,7 @@ const RegisterPage = () => {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         className="register-input"
-                        size="xl"
+                        size="lg"
                         type='text'
                     />
                 </div>
@@ -92,7 +92,7 @@ const RegisterPage = () => {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="register-input"
-                        size="xl"
+                        size="lg"
                         type='email'
                     />
                 </div>
@@ -105,13 +105,13 @@ const RegisterPage = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="register-input"
-                        size="xl"
+                        size="lg"
                     />
                     {error !== '' && <span className="error-message">{error}</span>}
                 </div>
 
                 {loading ?
-                    <InlineLoading description="Cargando..." /> :
+                    <ButtonSkeleton className="register-button" /> :
                     <Button
                         onClick={handleRegister}
                         className="register-button"
