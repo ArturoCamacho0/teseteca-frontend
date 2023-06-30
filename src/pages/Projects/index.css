@@ -50,12 +50,16 @@ h1 {
 }
 
 #add-button {
-    color: #007965;
+    color: #393939 !important;
 }
 
 #add-button:hover {
-    background-color: #54E346;
-    color: #E5F9DB;
+    background-color: #393939 !important;
+    color: #ffffff !important;
+}
+
+#add-button:hover > svg {
+    color: #ffffff !important;
 }
 
 .button-borderless {

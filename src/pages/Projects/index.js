@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from 'react-redux';
 import {
     Content,
-    DataTable,
     TableContainer,
     Table,
     TableHead,
@@ -13,29 +13,39 @@ import {
     Modal,
     TextInput,
     Form,
-    InlineNotification,
     Pagination,
-    Link
+    Link,
+    SkeletonText,
+    ExpandableSearch,
+    DatePicker,
+    DatePickerInput,
+    Select,
+    SelectItem
 } from "@carbon/react";
 import { Edit, TrashCan, Add } from "@carbon/icons-react";
+import axios from "axios";
+import Notification from '../../components/Notification';
 import "./index.css";
 
 const ProjectsPage = () => {
-    const [projects, setProjects] = useState([
-        { id: 1, name: "Project 1" },
-        { id: 2, name: "Project 2" },
-        { id: 3, name: "Project 3" },
-        { id: 4, name: "Project 4" },
-        { id: 5, name: "Project 5" },
-        { id: 6, name: "Project 6" },
-        { id: 7, name: "Project 7" },
-        { id: 8, name: "Project 8" },
-        { id: 9, name: "Project 9" },
-        { id: 10, name: "Project 10" }
-    ]);
-
+    const [projects, setProjects] = useState([]);
+    const [filteredProjects, setFilteredProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [projectsPerPage] = useState(10);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editProjectId, setEditProjectId] = useState(null);
+    const [editProjectName, setEditProjectName] = useState("");
+    const [editProjectDescription, setEditProjectDescription] = useState("");
+    const [editProjectStartDate, setEditProjectStartDate] = useState("");
+    const [editProjectEndDate, setEditProjectEndDate] = useState("");
+    const [editProjectUserId, setEditProjectUserId] = useState("");
+    const [trashCanModalOpen, setTrashCanModalOpen] = useState(false);
+    const [trashCanProjectId, setTrashCanProjectId] = useState(null);
+    const [error, setError] = useState('');
+    const accessToken = useSelector((state) => state.auth.token);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [users, setUsers] = useState([]); // Users state
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -43,19 +53,59 @@ const ProjectsPage = () => {
 
     const indexOfLastProject = currentPage * projectsPerPage;
     const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-    const currentProjects = projects.slice(indexOfFirstProject, indexOfLastProject);
 
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editProjectId, setEditProjectId] = useState(null);
-    const [editProjectName, setEditProjectName] = useState("");
-    const [TrashCanModalOpen, setTrashCanModalOpen] = useState(false);
-    const [TrashCanProjectId, setTrashCanProjectId] = useState(null);
-    const [notificationOpen, setNotificationOpen] = useState({ isOpen: true, type: "success" });
+    useEffect(() => {
+        fetchProjects();
+        fetchUsers(); // Fetch users on component mount
+    }, []);
 
-    const handleEditProject = (projectId, projectName) => {
+    const fetchProjects = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get("https://tesegewalt.website/api/projects", {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            setProjects(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error al obtener los proyectos:", error);
+            setLoading(false);
+        }
+    };
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get("https://tesegewalt.website/api/users", {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            setLoading(false);
+            setUsers(response.data);
+        } catch (error) {
+            setLoading(false);
+            console.error("Error al obtener los usuarios:", error);
+        }
+    };
+
+    useEffect(() => {
+        const filtered = projects.filter((project) =>
+            project.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredProjects(filtered);
+    }, [projects, searchQuery]);
+
+    const handleEditProject = (projectId, projectName, projectDescription, startDate, endDate, userId) => {
         setEditModalOpen(true);
         setEditProjectId(projectId);
         setEditProjectName(projectName);
+        setEditProjectDescription(projectDescription);
+        setEditProjectStartDate(startDate);
+        setEditProjectEndDate(endDate);
+        setEditProjectUserId(userId);
     };
 
     const handleTrashCanProject = (projectId) => {
@@ -63,21 +113,60 @@ const ProjectsPage = () => {
         setTrashCanProjectId(projectId);
     };
 
-    const handleSaveProject = () => {
-        // Aquí puedes realizar la lógica para guardar los cambios del proyecto
-        setEditModalOpen(false);
-        setNotificationOpen(true);
+    const handleSaveProject = async () => {
+        setLoading(true);
+        try {
+            const projectData = {
+                name: editProjectName,
+                description: editProjectDescription,
+                start_date: editProjectStartDate,
+                end_date: editProjectEndDate,
+                user_id: editProjectUserId
+            };
+
+            await axios.put(`https://tesegewalt.website/api/projects/${editProjectId}`, projectData, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            setEditModalOpen(false);
+            setLoading(false);
+            fetchProjects();
+            setError({ message: 'Proyecto guardado exitosamente', type: 'success' }); // Show success notification
+        } catch (error) {
+            setLoading(false);
+            console.error("Error al guardar el proyecto:", error);
+            setEditModalOpen(false);
+            setError({ message: 'Error al guardar el proyecto', type: 'error' }); // Show error notification
+        }
     };
 
-    const handleTrashCanConfirm = () => {
-        // Aquí puedes realizar la lógica para eliminar el proyecto
-        setTrashCanModalOpen(false);
-        setNotificationOpen(true);
+    const handleTrashCanConfirm = async () => {
+        setLoading(true);
+        try {
+            await axios.delete(`https://tesegewalt.website/api/projects/${trashCanProjectId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            setLoading(false);
+            setTrashCanModalOpen(false);
+            fetchProjects();
+            setError({ message: 'Proyecto eliminado exitosamente', type: 'success' }); // Show success notification
+        } catch (error) {
+            setLoading(false);
+            console.error("Error al eliminar el proyecto:", error);
+            setTrashCanModalOpen(false);
+            setError({ message: 'Error al eliminar el proyecto', type: 'error' }); // Show error notification
+        }
     };
 
-    const handleCloseNotification = () => {
-        setNotificationOpen(false);
-    };
+
+    const currentProjects = filteredProjects.slice(
+        indexOfFirstProject,
+        indexOfLastProject
+    );
 
     return (
         <Content>
@@ -87,77 +176,126 @@ const ProjectsPage = () => {
                     <Button
                         renderIcon={Add}
                         className="create-project-button"
+                        href="/projects/new"
                     >
                         Crear nuevo proyecto
                     </Button>
+                </div>
+                <div className="search-bar">
+                    <ExpandableSearch
+                        labelText="Buscar proyecto"
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={searchQuery}
+                    />
                 </div>
                 <TableContainer>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableHeader isSortable={true}>Nombre del Proyecto</TableHeader>
-                                <TableHeader>Cliente</TableHeader>
-                                <TableHeader isSortable={true}>Fecha de inicio</TableHeader>
-                                <TableHeader isSortable={true}>Fecha limite</TableHeader>
+                                <TableHeader isSortable={true}>
+                                    Nombre del Proyecto
+                                </TableHeader>
+                                <TableHeader isSortable={true}>
+                                    Fecha de inicio
+                                </TableHeader>
+                                <TableHeader isSortable={true}>
+                                    Fecha limite
+                                </TableHeader>
                                 <TableHeader>Encargado</TableHeader>
-                                <TableHeader isSortable={true}>No. de tareas pendientes</TableHeader>
-                                <TableHeader className="table-header">Acciones</TableHeader>
+                                <TableHeader isSortable={true}>
+                                    No. de tareas pendientes
+                                </TableHeader>
+                                <TableHeader className="table-header">
+                                    Acciones
+                                </TableHeader>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {currentProjects.map((project) => (
-                                <TableRow key={project.id}>
-                                    <TableCell align="center"><Link href="#">{project.name}</Link></TableCell>
-                                    <TableCell align="center">{project.name}</TableCell>
-                                    <TableCell align="center">{project.name}</TableCell>
-                                    <TableCell align="center">{project.name}</TableCell>
-                                    <TableCell align="center">{project.name}</TableCell>
-                                    <TableCell align="center">{project.name}</TableCell>
-                                    <TableCell className="actions" align="end">
-                                        <Button
-                                            id="add-button"
-                                            className="button-borderless"
-                                            kind="tertiary"
-                                            renderIcon={Add}
-                                            onClick={() =>
-                                                handleEditProject(
-                                                    project.id,
-                                                    project.name
-                                                )
-                                            }
-                                        >
-                                            Agregar tarea
-                                        </Button>
-                                        <Button
-                                            className="button-borderless"
-                                            kind="tertiary"
-                                            renderIcon={Edit}
-                                            onClick={() =>
-                                                handleEditProject(
-                                                    project.id,
-                                                    project.name
-                                                )
-                                            }
-                                        >
-                                            Editar
-                                        </Button>
-                                        <Button
-                                            kind="danger--ghost"
-                                            renderIcon={TrashCan}
-                                            onClick={() =>
-                                                handleTrashCanProject(project.id)
-                                            }
-                                        >
-                                            Eliminar
-                                        </Button>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={7}>
+                                        <SkeletonText paragraph width="100%" />
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                currentProjects.map((project) => (
+                                    <TableRow key={project.project_id}>
+                                        <TableCell align="center">
+                                            <Link href="#">
+                                                {project.name}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            {project.start_date}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            {project.end_date}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            {project.user.name}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            {project.tasks_count}
+                                        </TableCell>
+                                        <TableCell
+                                            className="actions"
+                                            align="end"
+                                        >
+                                            <Button
+                                                id="add-button"
+                                                className="button-borderless"
+                                                kind="tertiary"
+                                                renderIcon={Add}
+                                                onClick={() =>
+                                                    handleEditProject(
+                                                        project.project_id,
+                                                        project.name,
+                                                        project.description,
+                                                        project.start_date,
+                                                        project.end_date,
+                                                        project.user_id
+                                                    )
+                                                }
+                                            >
+                                                Agregar tarea
+                                            </Button>
+                                            <Button
+                                                className="button-borderless"
+                                                kind="tertiary"
+                                                renderIcon={Edit}
+                                                onClick={() =>
+                                                    handleEditProject(
+                                                        project.project_id,
+                                                        project.name,
+                                                        project.description,
+                                                        project.start_date,
+                                                        project.end_date,
+                                                        project.user_id
+                                                    )
+                                                }
+                                            >
+                                                Editar
+                                            </Button>
+                                            <Button
+                                                kind="danger--ghost"
+                                                renderIcon={TrashCan}
+                                                onClick={() =>
+                                                    handleTrashCanProject(
+                                                        project.project_id
+                                                    )
+                                                }
+                                            >
+                                                Eliminar
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 <Pagination
-                    totalItems={projects.length}
+                    totalItems={filteredProjects.length}
                     pageSizes={[10, 15, 20]}
                     onChange={handlePageChange}
                 />
@@ -167,6 +305,11 @@ const ProjectsPage = () => {
                 open={editModalOpen}
                 onRequestClose={() => setEditModalOpen(false)}
                 modalHeading="Editar Proyecto"
+                primaryButtonText="Guardar"
+                secondaryButtonText="Cancelar"
+                onSecondarySubmit={() => setEditModalOpen(false)}
+                onRequestSubmit={handleSaveProject}
+                primaryButtonDisabled={loading}
             >
                 <Form>
                     <TextInput
@@ -174,43 +317,80 @@ const ProjectsPage = () => {
                         labelText="Nombre del Proyecto"
                         value={editProjectName}
                         onChange={(e) => setEditProjectName(e.target.value)}
+                        disabled={loading}
                     />
-                    <Button onClick={handleSaveProject}>Guardar</Button>
+                    <TextInput
+                        id="edit-project-description"
+                        labelText="Descripción del Proyecto"
+                        value={editProjectDescription}
+                        onChange={(e) => setEditProjectDescription(e.target.value)}
+                        disabled={loading}
+                    />
+                    <DatePicker
+                        datePickerType="single"
+                        dateFormat="m/d/Y"
+                        id="edit-project-start-date"
+                        onChange={(e) => setEditProjectStartDate(e[0].toISOString().split("T")[0])}
+                        value={editProjectStartDate}
+                        disabled={loading}
+                    >
+                        <DatePickerInput
+                            id="edit-project-start-date"
+                            labelText="Fecha de inicio"
+                        />
+                    </DatePicker>
+                    <DatePicker
+                        datePickerType="single"
+                        dateFormat="m/d/Y"
+                        id="edit-project-end-date"
+                        onChange={(e) => setEditProjectEndDate(e[0].toISOString().split("T")[0])}
+                        value={editProjectEndDate}
+                        disabled={loading}
+                    >
+                        <DatePickerInput
+                            id="edit-project-end-date"
+                            labelText="Fecha límite"
+                        />
+                    </DatePicker>
+                    <Select
+                        id="edit-project-user-id"
+                        labelText="ID del usuario"
+                        value={editProjectUserId}
+                        onChange={(e) => setEditProjectUserId(e.target.value)}
+                        disabled={loading}
+                    >
+                        {users.map((user) => (
+                            <SelectItem
+                                key={user.id}
+                                value={user.id}
+                                text={user.name}
+                            />
+                        ))}
+                    </Select>
                 </Form>
             </Modal>
 
             <Modal
-                open={TrashCanModalOpen}
+                open={trashCanModalOpen}
                 onRequestClose={() => setTrashCanModalOpen(false)}
                 modalHeading="Eliminar Proyecto"
-                primaryButtonText="Cancelar"
+                primaryButtonText="Confirmar"
+                secondaryButtonText="Cancelar"
+                onSecondarySubmit={() => setTrashCanModalOpen(false)}
+                onRequestSubmit={handleTrashCanConfirm}
+                primaryButtonDisabled={loading}
             >
-                <p>¿Estás seguro que deseas eliminar este proyecto?</p>
-                <Button onClick={handleTrashCanConfirm} kind="danger">
-                    Eliminar
-                </Button>
+                <p>
+                    ¿Estás seguro de que deseas eliminar este proyecto?
+                </p>
             </Modal>
 
-            <div className="inline-notifications-container">
-                {(notificationOpen.isOpen && notificationOpen.type === "success") && (
-                    <InlineNotification
-                        title="Listo"
-                        subtitle="El proyecto se ha eliminado correctamente"
-                        kind="success"
-                        className="inline-notification"
-                        onClose={handleCloseNotification}
-                    />
-                )}
-                {(notificationOpen.isOpen && notificationOpen.type === "error") && (
-                    <InlineNotification
-                        title="Error"
-                        subtitle="No se ha podido eliminar el proyecto"
-                        className="inline-notification"
-                        onClose={handleCloseNotification}
-                    />
-                )}
-
-            </div>
+            {error && (
+                <Notification
+                    type={error.type}
+                    message={error.message}
+                />
+            )}
         </Content>
     );
 };

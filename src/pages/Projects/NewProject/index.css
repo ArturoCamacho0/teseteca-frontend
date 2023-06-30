@@ -1,0 +1,44 @@
+.add-project-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.add-project-container {
+    padding: 40px;
+    background-color: #f3f3f3;
+    border-radius: 4px;
+}
+
+.add-project-container h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.date-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.add-project-container input[type="text"],
+.add-project-container select,
+.add-project-container textarea {
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.add-project-container button {
+    margin-top: 20px;
+}
+
+.button-set {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
