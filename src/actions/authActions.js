@@ -24,10 +24,16 @@ export const registerRequest = () => ({
     type: 'REGISTER_REQUEST',
 });
 
-export const registerSuccess = (token) => ({
-    type: 'REGISTER_SUCCESS',
-    payload: token,
-});
+export const registerSuccess = (token, user) => {
+    // Guardar el token en el almacenamiento local
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    return {
+        type: 'REGISTER_SUCCESS',
+        payload: { token, user },
+    };
+};
 
 export const registerFailure = (error) => ({
     type: 'REGISTER_FAILURE',

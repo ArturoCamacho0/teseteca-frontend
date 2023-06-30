@@ -1,0 +1,6 @@
+.fixed-notification {
+    position: fixed;
+    right: 1vw;
+    bottom: 11vh;
+    z-index: 99;
+}

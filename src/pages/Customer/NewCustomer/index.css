@@ -1,0 +1,57 @@
+.add-customer-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.add-customer-container {
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    background-color: #f3f3f3;
+    border-radius: 4px;
+    width: 40vw;
+}
+
+.add-customer-container h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.date-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.add-customer-container input[type='text'],
+.add-customer-container input[type='email'],
+.add-customer-container select,
+.add-customer-container textarea {
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.add-customer-container button {
+    margin-top: 20px;
+}
+
+.button-set {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.input-group {
+    display: flex;
+    justify-content: center;
+}
+
+.input-group button {
+    margin-left: 1rem;
+}

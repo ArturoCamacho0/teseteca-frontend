@@ -3,13 +3,13 @@ import {
     TextInput,
     Button,
     ButtonSkeleton,
-    InlineNotification,
 } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../actions/authActions';
+import Notification from '../../components/Notification';
 import './index.css';
 
 const LoginPage = () => {
@@ -57,15 +57,11 @@ const LoginPage = () => {
                     }
                 })
                 .catch((error) => {
-                    console.log(error);
-                    //setError(error.response.status === 401 ? 'El usuario o contraseña es incorrecto' : error.response.data.message);
+                    console.error(error);
+                    setError(error.response.status === 401 ? 'El usuario o contraseña es incorrecto' : error.response.data.message);
                     setLoading(false);
                 });
         }
-    };
-
-    const handleNotificationClose = () => {
-        setError('');
     };
 
     return (
@@ -116,16 +112,7 @@ const LoginPage = () => {
                     ¿No tienes cuenta? <a href="/register">Regístrate</a>
                 </p>
             </div>
-            {error !== '' && (
-                <div className="fixed-notification">
-                    <InlineNotification
-                        title="Error"
-                        subtitle={error}
-                        kind="error"
-                        onClose={handleNotificationClose}
-                    />
-                </div>
-            )}
+            <Notification message={error} type={'error'} />
         </div>
     );
 };

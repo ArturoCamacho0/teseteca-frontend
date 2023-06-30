@@ -48,8 +48,11 @@ const Header = () => {
                         <HeaderMenuItem href="/projects">
                             Proyectos
                         </HeaderMenuItem>
+                        <HeaderMenuItem href="/customers">
+                            Clientes
+                        </HeaderMenuItem>
                         <HeaderMenuItem href="#">
-                            Equipos
+                            Tareas
                         </HeaderMenuItem>
                     </HeaderNavigation>
 

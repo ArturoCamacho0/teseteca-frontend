@@ -49,10 +49,3 @@
 .register-link a:hover {
     text-decoration: underline;
 }
-
-.fixed-notification {
-    position: fixed;
-    right: 1vw;
-    bottom: 11vh;
-    z-index: 99;
-}

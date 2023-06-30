@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import {
     TextInput,
     Button,
-    ButtonSkeleton
+    ButtonSkeleton,
 } from '@carbon/react';
 import { ArrowRight } from '@carbon/icons-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { registerSuccess } from '../../actions/authActions';
+import Notification from '../../components/Notification';
 import './index.css';
-import { registerRequest, registerSuccess, registerFailure } from '../../actions/authActions';
 
 
 const RegisterPage = () => {
@@ -17,43 +20,54 @@ const RegisterPage = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [validationError, setValidationError] = useState('');
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const isEmailValid = regex.test(username);
         const isFieldsEmpty = username === '' || password === '' || name === '' || lastName === '';
 
-        setError(isFieldsEmpty ? "Debes completar todos los campos" :
+        setValidationError(isFieldsEmpty ? "Debes completar todos los campos" :
             !isEmailValid ? "Introduce un email válido" :
                 password.length < 8 ? "La contrasena debe tener al menos 8 caracteres" : "");
     }, [username, password, name, lastName]);
 
-    const handleRegister = async () => {
-        try {
+    const handleRegister = () => {
+        setError('');
+        if (!validationError) {
             setLoading(true);
-            // Realize the register request to the API and obtain the token
-            registerRequest();
-            const response = await fetch('https://localhost:80/api/register', {
-                method: 'POST',
-                body: JSON.stringify({ username, password, name, lastName }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            const data = await response.json();
 
-            if (response.ok) {
-                // Save the token to the state using the registerSuccess action
-                registerSuccess(data.token);
-            } else {
-                // Handle the error using the registerFailure action
-                registerFailure(data.error);
-            }
-        } catch (error) {
-            // Handle network errors or other errors
-            registerFailure('Error de conexión');
+            const registerData = {
+                name: name,
+                lastName: lastName,
+                email: username,
+                password: password,
+            };
+
+            axios
+                .post('https://tesegewalt.website/api/register', registerData)
+                .then((response) => {
+                    setLoading(false);
+                    const data = response.data;
+                    if (data.token) {
+                        dispatch(registerSuccess(data.token, data.user));
+                        navigate('/home');
+                    } else {
+                        setError(data.error);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    setError(error.response.data.message);
+                    setLoading(false);
+                });
         }
-        setLoading(false);
+    };
+
+    const handleNotificationClose = () => {
+        setError('');
     };
 
     return (
@@ -107,7 +121,7 @@ const RegisterPage = () => {
                         className="register-input"
                         size="lg"
                     />
-                    {error !== '' && <span className="error-message">{error}</span>}
+                    {validationError !== '' && <span className="error-message">{validationError}</span>}
                 </div>
 
                 {loading ?
@@ -116,7 +130,7 @@ const RegisterPage = () => {
                         onClick={handleRegister}
                         className="register-button"
                         renderIcon={ArrowRight}
-                        disabled={loading || error !== ''}
+                        disabled={loading || validationError !== ''}
                     >
                         Continuar
                     </Button>
@@ -125,19 +139,9 @@ const RegisterPage = () => {
                     ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
                 </p>
             </div>
+            {error !== '' && (<Notification message={error} type={'error'} handleNotificationClose={handleNotificationClose} />)}
         </div>
     );
 };
 
-const mapStateToProps = (state) => ({
-    token: state.auth.token,
-    error: state.auth.error,
-});
-
-const mapDispatchToProps = {
-    registerRequest,
-    registerSuccess,
-    registerFailure,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(RegisterPage);
+export default RegisterPage;
