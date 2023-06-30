@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
     Content,
@@ -13,22 +13,78 @@ const Home = () => {
     const user = useSelector((state) => state.auth.user);
     const navigate = useNavigate();
 
+    const [activeProjectsCount, setActiveProjectsCount] = useState(0);
+    const [inactiveProjectsCount, setInactiveProjectsCount] = useState(0);
+    const [customersCount, setCustomersCount] = useState(0);
+
     useEffect(() => {
         // If the user is not logged in, redirect to the login page
         if (!token || !user) {
             navigate("/login");
+        } else {
+            fetchActiveProjectsCount();
+            fetchInactiveProjectsCount();
+            fetchUsersCount();
         }
     }, [token, user, navigate]);
+
+    const fetchActiveProjectsCount = () => {
+        fetch("https://tesegewalt.website/api/projects/active/amount", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                setActiveProjectsCount(data.count);
+            })
+            .catch(error => {
+                console.log("Error fetching active projects count:", error);
+            });
+    };
+
+    const fetchInactiveProjectsCount = () => {
+        fetch("https://tesegewalt.website/api/projects/inactive/amount", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                setInactiveProjectsCount(data.count);
+            })
+            .catch(error => {
+                console.log("Error fetching inactive projects count:", error);
+            });
+    };
+
+    const fetchUsersCount = () => {
+        fetch("https://tesegewalt.website/api/clients", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                setCustomersCount(data.length);
+            })
+            .catch(error => {
+                console.log("Error fetching customers count:", error);
+            });
+    };
 
     return (
         <Content className="home-content">
             <h1>Bienvenid@ {user ? user.name : ''}</h1>
-            <h4>Aqu&iacute; tienes el resumen a d&iacute;a de hoy:</h4>
+            <h4>Aquí tienes el resumen a día de hoy:</h4>
             <div className="stat-cards-container">
-                <ClickableTile className="stat-card" href="#">
+                <ClickableTile className="stat-card" href="/customers">
                     <div className="stat-card-content">
-                        <h2>Total de Usuarios</h2>
-                        <p className="stat-value">1,234</p>
+                        <h2>Total de Clientes</h2>
+                        <p className="stat-value">{customersCount}</p>
                     </div>
                     <div className="stat-card-footer">
                         <div className="stat-card-footer-content">
@@ -40,7 +96,7 @@ const Home = () => {
                 <ClickableTile className="stat-card" href="/projects">
                     <div className="stat-card-content">
                         <h2>Proyectos Activos</h2>
-                        <p className="stat-value">567</p>
+                        <p className="stat-value">{activeProjectsCount}</p>
                     </div>
                     <div className="stat-card-footer">
                         <div className="stat-card-footer-content">
@@ -52,19 +108,7 @@ const Home = () => {
                 <ClickableTile className="stat-card" href="/projects">
                     <div className="stat-card-content">
                         <h2>Proyectos concluidos</h2>
-                        <p className="stat-value">567</p>
-                    </div>
-                    <div className="stat-card-footer">
-                        <div className="stat-card-footer-content">
-                            <p>Ver Detalles</p>
-                            <ArrowRight />
-                        </div>
-                    </div>
-                </ClickableTile>
-                <ClickableTile className="stat-card" href="#">
-                    <div className="stat-card-content">
-                        <h2>Tareas Pendientes</h2>
-                        <p className="stat-value">89</p>
+                        <p className="stat-value">{inactiveProjectsCount}</p>
                     </div>
                     <div className="stat-card-footer">
                         <div className="stat-card-footer-content">
@@ -77,6 +121,5 @@ const Home = () => {
         </Content>
     );
 };
-
 
 export default Home;
