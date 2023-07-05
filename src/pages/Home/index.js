@@ -16,6 +16,7 @@ const Home = () => {
     const [activeProjectsCount, setActiveProjectsCount] = useState(0);
     const [inactiveProjectsCount, setInactiveProjectsCount] = useState(0);
     const [customersCount, setCustomersCount] = useState(0);
+    const [countTasks, setCountTasks] = useState(0);
 
     useEffect(() => {
         // If the user is not logged in, redirect to the login page
@@ -23,7 +24,7 @@ const Home = () => {
             navigate("/login");
         } else {
             fetchActiveProjectsCount();
-            fetchInactiveProjectsCount();
+            fetchPendingTasksCount();
             fetchUsersCount();
         }
     }, [token, user, navigate]);
@@ -44,8 +45,8 @@ const Home = () => {
             });
     };
 
-    const fetchInactiveProjectsCount = () => {
-        fetch("https://tesegewalt.website/api/projects/inactive/amount", {
+    const fetchPendingTasksCount = () => {
+        fetch("https://tesegewalt.website/api/tasks/pending/count", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -53,10 +54,10 @@ const Home = () => {
         })
             .then(response => response.json())
             .then(data => {
-                setInactiveProjectsCount(data.count);
+                setCountTasks(data.pending_tasks);
             })
             .catch(error => {
-                console.log("Error fetching inactive projects count:", error);
+                console.log("Error fetching tasks count:", error);
             });
     };
 
@@ -95,7 +96,7 @@ const Home = () => {
                 </ClickableTile>
                 <ClickableTile className="stat-card" href="/projects">
                     <div className="stat-card-content">
-                        <h2>Proyectos Activos</h2>
+                        <h2>Proyectos activos</h2>
                         <p className="stat-value">{activeProjectsCount}</p>
                     </div>
                     <div className="stat-card-footer">
@@ -107,8 +108,8 @@ const Home = () => {
                 </ClickableTile>
                 <ClickableTile className="stat-card" href="/projects">
                     <div className="stat-card-content">
-                        <h2>Proyectos concluidos</h2>
-                        <p className="stat-value">{inactiveProjectsCount}</p>
+                        <h2>Tareas pendientes</h2>
+                        <p className="stat-value">{countTasks}</p>
                     </div>
                     <div className="stat-card-footer">
                         <div className="stat-card-footer-content">

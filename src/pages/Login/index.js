@@ -108,9 +108,6 @@ const LoginPage = () => {
                         Continuar
                     </Button>
                 )}
-                <p className="register-link">
-                    ¿No tienes cuenta? <a href="/register">Regístrate</a>
-                </p>
             </div>
             <Notification message={error} type={'error'} />
         </div>

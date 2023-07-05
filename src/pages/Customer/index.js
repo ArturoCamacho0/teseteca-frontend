@@ -20,6 +20,7 @@ import {
 } from "@carbon/react";
 import { Edit, TrashCan, Add } from "@carbon/icons-react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Notification from "../../components/Notification";
 import "./index.css";
 
@@ -45,8 +46,13 @@ const CustomersPage = () => {
     });
 
     const token = useSelector((state) => state.auth.token);
+    const navigate = useNavigate();
 
     useEffect(() => {
+        if (!token) {
+            navigate("/login");
+        }
+
         fetchCustomers();
         fetchCompanies();
     }, []);
@@ -298,6 +304,7 @@ const CustomersPage = () => {
                         onChange={(e) => setEditCustomerCompany(e.target.value)}
                         disabled={loading}
                     >
+                        <SelectItem />
                         {companies.map((company) => (
                             <SelectItem key={company.company_id} value={company.company_id} text={company.name} />
                         ))}

@@ -35,8 +35,13 @@ const AddCustomerPage = () => {
     const [companyEmail, setCompanyEmail] = useState('');
     const [companies, setCompanies] = useState([]);
     const [notification, setNotification] = useState({ message: '', type: '' });
+    const token = useSelector((state) => state.auth.token);
 
     useEffect(() => {
+        if (!token) {
+            navigate("/login");
+        }
+
         fetchCompanies();
     }, []);
 

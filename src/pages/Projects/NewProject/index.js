@@ -11,7 +11,6 @@ import {
     Select,
     SelectItem,
     ButtonSet,
-    Toggle,
 } from '@carbon/react';
 import Notification from '../../../components/Notification';
 import { useNavigate } from 'react-router-dom';
@@ -28,7 +27,7 @@ const AddProjectPage = () => {
         end_date: null,
     });
     const [assignedTo, setAssignedTo] = useState('');
-    const [isActive, setIsActive] = useState(false);
+    const [status, setStatus] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [users, setUsers] = useState([]);
@@ -40,9 +39,14 @@ const AddProjectPage = () => {
         },
     };
 
+
     useEffect(() => {
+        if (!accessToken) {
+            navigate('/login');
+        }
+
         fetchUsers();
-    }, []);
+    }, [accessToken, navigate]);
 
     const fetchUsers = () => {
         axios
@@ -71,8 +75,8 @@ const AddProjectPage = () => {
             description: description,
             start_date: formattedStartDate,
             end_date: formattedEndDate,
-            status: isActive,
-            user_id: assignedTo,
+            status: status,
+            user_id: parseInt(assignedTo),
         };
 
         axios
@@ -173,14 +177,17 @@ const AddProjectPage = () => {
                                 />
                             ))}
                         </Select>
-                        <Toggle
-                            labelText="Estatus del proyecto"
-                            labelA="Inactivo"
-                            labelB="Activo"
-                            toggled={isActive}
-                            id="toggle-1"
-                            onClick={() => setIsActive(!isActive)}
-                        />
+                        <Select
+                            id="status"
+                            labelText="Estado"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <SelectItem />
+                            <SelectItem text="En progreso" value="in_progress" />
+                            <SelectItem text="Terminado" value="finished" />
+                            <SelectItem text="Cancelado" value="canceled" />
+                        </Select>
                     </FormGroup>
                     <ButtonSet className="button-set">
                         <Button

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 import {
     Content,
     TableContainer,
@@ -20,7 +21,7 @@ import {
     DatePicker,
     DatePickerInput,
     Select,
-    SelectItem
+    SelectItem,
 } from "@carbon/react";
 import { Edit, TrashCan, Add } from "@carbon/icons-react";
 import axios from "axios";
@@ -46,6 +47,7 @@ const ProjectsPage = () => {
     const accessToken = useSelector((state) => state.auth.token);
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState([]); // Users state
+    const [status, setStatus] = useState('');
 
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -53,10 +55,16 @@ const ProjectsPage = () => {
 
     const indexOfLastProject = currentPage * projectsPerPage;
     const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+    const token = useSelector((state) => state.auth.token);
+    const navigate = useNavigate();
 
     useEffect(() => {
+        if (!token) {
+            navigate("/login");
+        }
+
         fetchProjects();
-        fetchUsers(); // Fetch users on component mount
+        fetchUsers();
     }, []);
 
     const fetchProjects = async () => {
@@ -98,7 +106,7 @@ const ProjectsPage = () => {
         setFilteredProjects(filtered);
     }, [projects, searchQuery]);
 
-    const handleEditProject = (projectId, projectName, projectDescription, startDate, endDate, userId) => {
+    const handleEditProject = (projectId, projectName, projectDescription, startDate, endDate, userId, editStatus) => {
         setEditModalOpen(true);
         setEditProjectId(projectId);
         setEditProjectName(projectName);
@@ -106,6 +114,7 @@ const ProjectsPage = () => {
         setEditProjectStartDate(startDate);
         setEditProjectEndDate(endDate);
         setEditProjectUserId(userId);
+        setStatus(editStatus);
     };
 
     const handleTrashCanProject = (projectId) => {
@@ -120,6 +129,7 @@ const ProjectsPage = () => {
                 name: editProjectName,
                 description: editProjectDescription,
                 start_date: editProjectStartDate,
+                status: status,
                 end_date: editProjectEndDate,
                 user_id: editProjectUserId
             };
@@ -203,7 +213,7 @@ const ProjectsPage = () => {
                                 </TableHeader>
                                 <TableHeader>Encargado</TableHeader>
                                 <TableHeader isSortable={true}>
-                                    No. de tareas pendientes
+                                    Tareas finalizadas: 
                                 </TableHeader>
                                 <TableHeader className="table-header">
                                     Acciones
@@ -221,7 +231,7 @@ const ProjectsPage = () => {
                                 currentProjects.map((project) => (
                                     <TableRow key={project.project_id}>
                                         <TableCell align="center">
-                                            <Link href="#">
+                                            <Link href={'/projects/' + project.project_id}>
                                                 {project.name}
                                             </Link>
                                         </TableCell>
@@ -242,24 +252,6 @@ const ProjectsPage = () => {
                                             align="end"
                                         >
                                             <Button
-                                                id="add-button"
-                                                className="button-borderless"
-                                                kind="tertiary"
-                                                renderIcon={Add}
-                                                onClick={() =>
-                                                    handleEditProject(
-                                                        project.project_id,
-                                                        project.name,
-                                                        project.description,
-                                                        project.start_date,
-                                                        project.end_date,
-                                                        project.user_id
-                                                    )
-                                                }
-                                            >
-                                                Agregar tarea
-                                            </Button>
-                                            <Button
                                                 className="button-borderless"
                                                 kind="tertiary"
                                                 renderIcon={Edit}
@@ -270,7 +262,8 @@ const ProjectsPage = () => {
                                                         project.description,
                                                         project.start_date,
                                                         project.end_date,
-                                                        project.user_id
+                                                        project.user_id,
+                                                        project.status
                                                     )
                                                 }
                                             >
@@ -354,11 +347,12 @@ const ProjectsPage = () => {
                     </DatePicker>
                     <Select
                         id="edit-project-user-id"
-                        labelText="ID del usuario"
+                        labelText="Encargado"
                         value={editProjectUserId}
                         onChange={(e) => setEditProjectUserId(e.target.value)}
                         disabled={loading}
                     >
+                        <SelectItem />
                         {users.map((user) => (
                             <SelectItem
                                 key={user.id}
@@ -366,6 +360,18 @@ const ProjectsPage = () => {
                                 text={user.name}
                             />
                         ))}
+                    </Select>
+                    <Select
+                        id="status"
+                        labelText="Estado"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                    >
+                        <SelectItem />
+                        <SelectItem text="Pendiente" value="pending" />
+                        <SelectItem text="En progreso" value="in_progress" />
+                        <SelectItem text="Terminado" value="finished" />
+                        <SelectItem text="Cancelado" value="canceled" />
                     </Select>
                 </Form>
             </Modal>

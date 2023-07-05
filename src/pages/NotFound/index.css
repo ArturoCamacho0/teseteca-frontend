@@ -1,0 +1,15 @@
+.not-found-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding-bottom: 15rem;
+}
+
+.not-found-container {
+    text-align: center;
+}
+
+.not-found-container>* {
+    margin-bottom: 1rem;
+}

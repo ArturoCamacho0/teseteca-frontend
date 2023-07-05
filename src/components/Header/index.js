@@ -9,7 +9,7 @@ import {
     HeaderGlobalAction,
     SkipToContent,
 } from '@carbon/react';
-import { NotificationFilled, Search, Logout } from '@carbon/icons-react';
+import { FaceAdd, Logout } from '@carbon/icons-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../actions/authActions';
 import { useNavigate } from 'react-router-dom';
@@ -58,21 +58,10 @@ const Header = () => {
 
                     <HeaderGlobalBar>
                         <HeaderGlobalAction
-                            aria-label="Notificaciones"
-                            onClick={() => {
-                                // Handle notification action click
-                            }}
+                            aria-label="Registrar usuario"
+                            onClick={() => navigate('/register')}
                         >
-                            <NotificationFilled />
-                        </HeaderGlobalAction>
-
-                        <HeaderGlobalAction
-                            aria-label="Buscar"
-                            onClick={() => {
-                                // Handle switcher action click
-                            }}
-                        >
-                            <Search />
+                            <FaceAdd />
                         </HeaderGlobalAction>
 
                         <HeaderGlobalAction

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from "react-redux";
 import {
     TextInput,
     Button,
@@ -23,6 +24,13 @@ const RegisterPage = () => {
     const [validationError, setValidationError] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const token = useSelector((state) => state.auth.token);
+
+    useEffect(() => {
+        if(!token) {
+            navigate('/login');
+        }
+    });
 
     useEffect(() => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -135,9 +143,6 @@ const RegisterPage = () => {
                         Continuar
                     </Button>
                 }
-                <p className="login-link">
-                    ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
-                </p>
             </div>
             {error !== '' && (<Notification message={error} type={'error'} handleNotificationClose={handleNotificationClose} />)}
         </div>
