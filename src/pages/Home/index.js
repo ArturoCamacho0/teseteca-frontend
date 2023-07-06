@@ -14,9 +14,9 @@ const Home = () => {
     const navigate = useNavigate();
 
     const [activeProjectsCount, setActiveProjectsCount] = useState(0);
-    const [inactiveProjectsCount, setInactiveProjectsCount] = useState(0);
     const [customersCount, setCustomersCount] = useState(0);
     const [countTasks, setCountTasks] = useState(0);
+    const [endingProjects, setEndingProjects] = useState([]);
 
     useEffect(() => {
         // If the user is not logged in, redirect to the login page
@@ -26,6 +26,7 @@ const Home = () => {
             fetchActiveProjectsCount();
             fetchPendingTasksCount();
             fetchUsersCount();
+            fetchEndingProjects();
         }
     }, [token, user, navigate]);
 
@@ -77,6 +78,22 @@ const Home = () => {
             });
     };
 
+    const fetchEndingProjects = () => {
+        fetch("https://tesegewalt.website/api/upcoming/projects", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                setEndingProjects(data);
+            })
+            .catch(error => {
+                console.log("Error fetching ending projects:", error);
+            });
+    };
+
     return (
         <Content className="home-content">
             <h1>Bienvenid@ {user ? user.name : ''}</h1>
@@ -89,9 +106,7 @@ const Home = () => {
                     </div>
                     <div className="stat-card-footer">
                         <div className="stat-card-footer-content">
-                            <p>Ver Detalles</p>
-                            <ArrowRight />
-                        </div>
+                            <p>Ver Detalles</p></div>
                     </div>
                 </ClickableTile>
                 <ClickableTile className="stat-card" href="/projects">
@@ -106,19 +121,26 @@ const Home = () => {
                         </div>
                     </div>
                 </ClickableTile>
-                <ClickableTile className="stat-card" href="/projects">
+                <ClickableTile className="stat-card" id="task-container">
                     <div className="stat-card-content">
                         <h2>Tareas pendientes</h2>
                         <p className="stat-value">{countTasks}</p>
                     </div>
-                    <div className="stat-card-footer">
-                        <div className="stat-card-footer-content">
-                            <p>Ver Detalles</p>
-                            <ArrowRight />
-                        </div>
-                    </div>
                 </ClickableTile>
             </div>
+
+            <br /><br /><br />
+            <h4>Proyectos próximos a sobrepasar la fecha l&iacute;mite:</h4>
+            <ul>
+                {endingProjects.map(project => (
+                    <li key={project.project_id}>
+                        <ClickableTile className="ending-project" href={`/projects/${project.project_id}`}>
+                            <h5>{project.name}</h5>
+                            <p>Fecha de l&iacute;mite: {project.end_date}</p>
+                        </ClickableTile>
+                    </li>
+                ))}
+            </ul>
         </Content>
     );
 };

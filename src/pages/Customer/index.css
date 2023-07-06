@@ -47,12 +47,6 @@ h1 {
     margin-bottom: 10px;
 }
 
-.actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-}
-
 #add-button {
     color: #007965;
 }

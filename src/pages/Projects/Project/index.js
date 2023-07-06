@@ -21,6 +21,9 @@ import {
     TableSelectRow,
     Tag,
     DataTableSkeleton,
+    UnorderedList,
+    ListItem,
+    Link
 } from '@carbon/react';
 import {
     TrashCan,
@@ -41,6 +44,7 @@ const ProjectDetailsPage = () => {
     const [loading, setLoading] = useState(false);
     const [notification, setNotification] = useState(null);
     const [taskToEdit, setTaskToEdit] = useState(null);
+    const [customersAssigned, setCustomersAssigned] = useState([]);
     const accessToken = useSelector((state) => state.auth.token);
     const navigate = useNavigate();
 
@@ -71,6 +75,27 @@ const ProjectDetailsPage = () => {
         fetchProjectData();
     }, [accessToken, fetchProjectData, navigate]);
 
+
+    const fetchAssignedCustomers = async (customerId) => {
+        setLoading(true);
+        try {
+            const response = await axios.get(
+                `https://tesegewalt.website/api/clients/projects/${projectId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+            
+            setCustomersAssigned(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const fetchUser = async (userId) => {
             setLoading(true);
@@ -99,6 +124,7 @@ const ProjectDetailsPage = () => {
             const uniqueUserIds = Array.from(new Set(taskUserIds));
             uniqueUserIds.forEach((userId) => fetchUser(userId));
         }
+        fetchAssignedCustomers();
     }, [project, accessToken]);
 
     const updateTaskStatus = async (selectedRows, status) => {
@@ -268,6 +294,16 @@ const ProjectDetailsPage = () => {
                     </p>
                     <p>
                         <strong>Encargado:</strong> {user.name + ' ' + user.lastname}
+                    </p>
+                    <br />
+                    <strong>Clientes involucrados:</strong>
+                    <UnorderedList>
+                        {customersAssigned.length > 0 ? (customersAssigned.map(customer => {
+                            return <ListItem key={customer.client.client_id}>{customer.client.name + ' ' + customer.client.last_name}</ListItem>
+                        })) : <ListItem>No hay clientes asignados todavía</ListItem>}
+                    </UnorderedList>
+                    <p>
+                        <Link href="/customers">Asignar clientes al proyecto</Link>
                     </p>
 
                     <DataTable rows={rows} headers={headers}>

@@ -144,6 +144,7 @@ const AddProjectPage = () => {
                                     id="startDate"
                                     labelText="Fecha de inicio"
                                     disabled={loading}
+                                    autoComplete="off"
                                 />
                             </DatePicker>
                             <DatePicker
@@ -158,6 +159,7 @@ const AddProjectPage = () => {
                                     id="endDate"
                                     labelText="Fecha límite"
                                     disabled={loading}
+                                    autoComplete="off"
                                 />
                             </DatePicker>
                         </div>

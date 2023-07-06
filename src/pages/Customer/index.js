@@ -17,8 +17,9 @@ import {
     Select,
     SelectItem,
     SkeletonText,
+    Checkbox
 } from "@carbon/react";
-import { Edit, TrashCan, Add } from "@carbon/icons-react";
+import { Edit, TrashCan, Add, Task } from "@carbon/icons-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Notification from "../../components/Notification";
@@ -44,6 +45,12 @@ const CustomersPage = () => {
         type: "success",
         message: "",
     });
+    const [projectModalOpen, setProjectModalOpen] = useState(false);
+    const [projects, setProjects] = useState([]);
+    const [selectedProjects, setSelectedProjects] = useState([]);
+    const [selectedCustomerId, setSelectedCustomerId] = useState(0);
+
+
 
     const token = useSelector((state) => state.auth.token);
     const navigate = useNavigate();
@@ -56,6 +63,22 @@ const CustomersPage = () => {
         fetchCustomers();
         fetchCompanies();
     }, []);
+
+    const fetchProjects = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get("https://tesegewalt.website/api/projects", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setProjects(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error al obtener los proyectos:", error);
+            setLoading(false);
+        }
+    };
 
     const fetchCustomers = async () => {
         setLoading(true);
@@ -189,6 +212,72 @@ const CustomersPage = () => {
         });
     };
 
+    const handleOpenProjectModal = (customerId) => {
+        setProjectModalOpen(true);
+        setSelectedProjects([]);
+        fetchProjects();
+        setSelectedCustomerId(customerId);
+    };
+
+    const handleAssignProject = async () => {
+        setLoading(true);
+        try {
+            const assignmentData = {
+                client_id: selectedCustomerId,
+                project_ids: selectedProjects,
+            };
+
+            await axios.post(
+                "https://tesegewalt.website/api/clients/assign-project",
+                assignmentData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setProjectModalOpen(false);
+            setNotification({
+                isOpen: true,
+                type: "success",
+                message: "Proyecto asignado exitosamente.",
+            });
+            setSelectedProjects([]);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error al asignar el proyecto:", error);
+            if (error.response.data.message === 'Los proyectos ya están asignados al cliente.') {
+                setNotification({
+                    isOpen: true,
+                    type: "error",
+                    message:
+                        "Los proyectos ya están asignados al cliente.",
+                });
+            } else {
+                setNotification({
+                    isOpen: true,
+                    type: "error",
+                    message:
+                        "Hubo un error al asignar los proyectos.",
+                });
+            }
+
+            setProjectModalOpen(false);
+            setLoading(false);
+        }
+    };
+
+
+    const handleCheckboxChange = (projectId) => {
+        if (selectedProjects.includes(projectId)) {
+            setSelectedProjects(selectedProjects.filter((id) => id !== projectId));
+        } else {
+            setSelectedProjects([...selectedProjects, projectId]);
+        }
+    };
+
+
     return (
         <Content>
             <div className="customers-container">
@@ -218,7 +307,7 @@ const CustomersPage = () => {
                                     <TableCell><SkeletonText /></TableCell>
                                     <TableCell><SkeletonText /></TableCell>
                                 </TableRow>) : currentCustomers.map((customer) => (
-                                    <TableRow key={customer.client_id}>
+                                    <TableRow key={customer.client_id} onClick={() => null}>
                                         <TableCell>{customer.name}</TableCell>
                                         <TableCell>{customer.email}</TableCell>
                                         <TableCell>{customer.phone}</TableCell>
@@ -247,6 +336,13 @@ const CustomersPage = () => {
                                                 onClick={() => handleTrashCanCustomer(customer.client_id)}
                                             >
                                                 Eliminar
+                                            </Button>
+                                            <Button
+                                                kind="primary"
+                                                renderIcon={Task}
+                                                onClick={() => handleOpenProjectModal(customer.client_id)}
+                                            >
+                                                Asignar proyectos
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -324,6 +420,45 @@ const CustomersPage = () => {
             >
                 <p>¿Estás seguro de que deseas eliminar este cliente?</p>
             </Modal>
+
+            <Modal
+                open={projectModalOpen}
+                onRequestClose={() => setProjectModalOpen(false)}
+                modalHeading="Asignar Proyectos"
+                primaryButtonText="Asignar"
+                secondaryButtonText="Cancelar"
+                onSecondarySubmit={() => setProjectModalOpen(false)}
+                onRequestSubmit={handleAssignProject}
+                primaryButtonDisabled={loading}
+            >
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableHeader>Proyecto</TableHeader>
+                                <TableHeader>Seleccionar</TableHeader>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {projects.map((project) => (
+                                <TableRow key={project.project_id}>
+                                    <TableCell>{project.name}</TableCell>
+                                    <TableCell>
+                                        <Checkbox
+                                            id={`project-checkbox-${project.project_id}`}
+                                            labelText=""
+                                            checked={selectedProjects.includes(project.project_id)}
+                                            onChange={() => handleCheckboxChange(project.project_id)}
+                                            disabled={loading}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Modal>
+
 
             {notification.isOpen && (
                 <Notification

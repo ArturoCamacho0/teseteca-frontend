@@ -57,3 +57,11 @@
     width: 1rem;
     height: 1rem;
 }
+
+.ending-project {
+    margin-bottom: 5px;
+}
+
+#task-container {
+    cursor:auto;
+}

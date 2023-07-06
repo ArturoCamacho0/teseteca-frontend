@@ -51,9 +51,6 @@ const Header = () => {
                         <HeaderMenuItem href="/customers">
                             Clientes
                         </HeaderMenuItem>
-                        <HeaderMenuItem href="#">
-                            Tareas
-                        </HeaderMenuItem>
                     </HeaderNavigation>
 
                     <HeaderGlobalBar>
