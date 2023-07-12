@@ -8,7 +8,7 @@ const storedUser = localStorage.getItem('user');
 const initialState = {
     auth: {
         token: storedToken || null,
-        user: storedUser || null,
+        user: JSON.parse(storedUser) || null,
         error: null,
         isLoading: false,
     },

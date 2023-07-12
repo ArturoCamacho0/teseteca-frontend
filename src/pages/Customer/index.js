@@ -64,10 +64,10 @@ const CustomersPage = () => {
         fetchCompanies();
     }, []);
 
-    const fetchProjects = async () => {
+    const fetchProjects = async (customerId) => {
         setLoading(true);
         try {
-            const response = await axios.get("https://tesegewalt.website/api/projects", {
+            const response = await axios.get("https://tesegewalt.website/api/clients/not-assigned-projects/"+customerId, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -113,7 +113,7 @@ const CustomersPage = () => {
     };
 
     const getCompanyName = (companyId) => {
-        const company = companies.find((c) => c.id === companyId);
+        const company = companies.find((c) => c.company_id === companyId);
         return company ? company.name : "";
     };
 
@@ -215,8 +215,8 @@ const CustomersPage = () => {
     const handleOpenProjectModal = (customerId) => {
         setProjectModalOpen(true);
         setSelectedProjects([]);
-        fetchProjects();
         setSelectedCustomerId(customerId);
+        fetchProjects(customerId);
     };
 
     const handleAssignProject = async () => {
