@@ -17,7 +17,7 @@ import {
     Select,
     SelectItem,
     SkeletonText,
-    Checkbox
+    Checkbox,
 } from "@carbon/react";
 import { Edit, TrashCan, Add, Task } from "@carbon/icons-react";
 import { useSelector } from "react-redux";
@@ -28,16 +28,19 @@ import "./index.css";
 const CustomersPage = () => {
     const [loading, setLoading] = useState(false);
     const [customers, setCustomers] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
     const [companies, setCompanies] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [customersPerPage] = useState(10);
+    const [customersPerPage, setCustomersPerPage] = useState(10);
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editCustomerId, setEditCustomerId] = useState(null);
-    const [editCustomerName, setEditCustomerName] = useState("");
-    const [editCustomerLastName, setEditCustomerLastName] = useState("");
-    const [editCustomerEmail, setEditCustomerEmail] = useState("");
-    const [editCustomerPhone, setEditCustomerPhone] = useState("");
-    const [editCustomerCompany, setEditCustomerCompany] = useState("");
+    const [editCustomer, setEditCustomer] = useState({
+        id: null,
+        name: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        company: "",
+    });
     const [trashCanModalOpen, setTrashCanModalOpen] = useState(false);
     const [trashCanCustomerId, setTrashCanCustomerId] = useState(null);
     const [notification, setNotification] = useState({
@@ -50,8 +53,6 @@ const CustomersPage = () => {
     const [selectedProjects, setSelectedProjects] = useState([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState(0);
 
-
-
     const token = useSelector((state) => state.auth.token);
     const navigate = useNavigate();
 
@@ -62,16 +63,19 @@ const CustomersPage = () => {
 
         fetchCustomers();
         fetchCompanies();
-    }, []);
+    }, [token, navigate]);
 
     const fetchProjects = async (customerId) => {
         setLoading(true);
         try {
-            const response = await axios.get("https://tesegewalt.website/api/clients/not-assigned-projects/"+customerId, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            const response = await axios.get(
+                `https://tesegewalt.website/api/clients/not-assigned-projects/${customerId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            });
+            );
             setProjects(response.data);
             setLoading(false);
         } catch (error) {
@@ -83,13 +87,17 @@ const CustomersPage = () => {
     const fetchCustomers = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("https://tesegewalt.website/api/clients", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await axios.get(
+                `https://tesegewalt.website/api/clients?page=${currentPage}&perPage=${customersPerPage}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            setCustomers(response.data.data);
+            setTotalItems(response.data.total);
             setLoading(false);
-            setCustomers(response.data);
         } catch (error) {
             setLoading(false);
             console.error("Error al obtener los clientes:", error);
@@ -99,13 +107,16 @@ const CustomersPage = () => {
     const fetchCompanies = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("https://tesegewalt.website/api/companies", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setLoading(false);
+            const response = await axios.get(
+                "https://tesegewalt.website/api/companies",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setCompanies(response.data);
+            setLoading(false);
         } catch (error) {
             setLoading(false);
             console.error("Error al obtener las compañías:", error);
@@ -118,21 +129,25 @@ const CustomersPage = () => {
     };
 
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
+        console.log(pageNumber);
+        if (currentPage !== pageNumber.page) {
+            setCurrentPage(pageNumber.page);
+            fetchCustomers();
+        }
+        
+        if (customersPerPage !== pageNumber.pageSize) {
+            setCustomersPerPage(pageNumber.pageSize);
+            fetchCustomers();
+        }
     };
 
-    const indexOfLastCustomer = currentPage * customersPerPage;
-    const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage;
-    const currentCustomers = customers.slice(indexOfFirstCustomer, indexOfLastCustomer);
+    useEffect(() => {
+        fetchCustomers();
+    }, [currentPage, customersPerPage]);
 
-    const handleEditCustomer = (customerId, customerName, customerLastName, customerEmail, customerPhone, customerCompany) => {
+    const handleEditCustomer = (customer) => {
         setEditModalOpen(true);
-        setEditCustomerId(customerId);
-        setEditCustomerName(customerName);
-        setEditCustomerLastName(customerLastName);
-        setEditCustomerEmail(customerEmail);
-        setEditCustomerPhone(customerPhone);
-        setEditCustomerCompany(customerCompany); // Establecer el valor de la compañía seleccionada
+        setEditCustomer(customer);
     };
 
     const handleTrashCanCustomer = (customerId) => {
@@ -144,18 +159,22 @@ const CustomersPage = () => {
         setLoading(true);
         try {
             const updatedCustomer = {
-                name: editCustomerName,
-                last_name: editCustomerLastName,
-                email: editCustomerEmail,
-                phone: editCustomerPhone,
-                company_id: editCustomerCompany,
+                name: editCustomer.name,
+                last_name: editCustomer.lastName,
+                email: editCustomer.email,
+                phone: editCustomer.phone,
+                company_id: editCustomer.company,
             };
 
-            await axios.put(`https://tesegewalt.website/api/clients/${editCustomerId}`, updatedCustomer, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await axios.put(
+                `https://tesegewalt.website/api/clients/${editCustomer.id}`,
+                updatedCustomer,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
             setEditModalOpen(false);
             setNotification({
@@ -163,14 +182,14 @@ const CustomersPage = () => {
                 type: "success",
                 message: "Cliente actualizado exitosamente.",
             });
-            fetchCustomers();
             setLoading(false);
         } catch (error) {
             console.error("Error al actualizar el cliente:", error);
             setNotification({
                 isOpen: true,
                 type: "error",
-                message: "Hubo un error al actualizar el cliente. Por favor, inténtalo nuevamente.",
+                message:
+                    "Hubo un error al actualizar el cliente. Por favor, inténtalo nuevamente.",
             });
             setLoading(false);
         }
@@ -179,11 +198,14 @@ const CustomersPage = () => {
     const handleTrashCanConfirm = async () => {
         setLoading(true);
         try {
-            await axios.delete(`https://tesegewalt.website/api/clients/${trashCanCustomerId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await axios.delete(
+                `https://tesegewalt.website/api/clients/${trashCanCustomerId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
             setTrashCanModalOpen(false);
             setNotification({
@@ -191,14 +213,14 @@ const CustomersPage = () => {
                 type: "success",
                 message: "Cliente eliminado exitosamente.",
             });
-            fetchCustomers();
             setLoading(false);
         } catch (error) {
             console.error("Error al eliminar el cliente:", error);
             setNotification({
                 isOpen: true,
                 type: "error",
-                message: "Hubo un error al eliminar el cliente. Por favor, inténtalo nuevamente.",
+                message:
+                    "Hubo un error al eliminar el cliente. Por favor, inténtalo nuevamente.",
             });
             setLoading(false);
         }
@@ -247,19 +269,21 @@ const CustomersPage = () => {
             setLoading(false);
         } catch (error) {
             console.error("Error al asignar el proyecto:", error);
-            if (error.response.data.message === 'Los proyectos ya están asignados al cliente.') {
+            if (
+                error.response &&
+                error.response.data &&
+                error.response.data.message === "Los proyectos ya están asignados al cliente."
+            ) {
                 setNotification({
                     isOpen: true,
                     type: "error",
-                    message:
-                        "Los proyectos ya están asignados al cliente.",
+                    message: "Los proyectos ya están asignados al cliente.",
                 });
             } else {
                 setNotification({
                     isOpen: true,
                     type: "error",
-                    message:
-                        "Hubo un error al asignar los proyectos.",
+                    message: "Hubo un error al asignar los proyectos.",
                 });
             }
 
@@ -267,7 +291,6 @@ const CustomersPage = () => {
             setLoading(false);
         }
     };
-
 
     const handleCheckboxChange = (projectId) => {
         if (selectedProjects.includes(projectId)) {
@@ -277,13 +300,16 @@ const CustomersPage = () => {
         }
     };
 
-
     return (
         <Content>
             <div className="customers-container">
                 <div className="customers-container__button-title">
                     <h1>Clientes</h1>
-                    <Button renderIcon={Add} className="create-customer-button" href="/customers/new">
+                    <Button
+                        renderIcon={Add}
+                        className="create-customer-button"
+                        href="/customers/new"
+                    >
                         Agregar un nuevo cliente
                     </Button>
                 </div>
@@ -299,33 +325,50 @@ const CustomersPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {loading ?
-                                (<TableRow>
-                                    <TableCell><SkeletonText /></TableCell>
-                                    <TableCell><SkeletonText /></TableCell>
-                                    <TableCell><SkeletonText /></TableCell>
-                                    <TableCell><SkeletonText /></TableCell>
-                                    <TableCell><SkeletonText /></TableCell>
-                                </TableRow>) : currentCustomers.map((customer) => (
-                                    <TableRow key={customer.client_id} onClick={() => null}>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell>
+                                        <SkeletonText />
+                                    </TableCell>
+                                    <TableCell>
+                                        <SkeletonText />
+                                    </TableCell>
+                                    <TableCell>
+                                        <SkeletonText />
+                                    </TableCell>
+                                    <TableCell>
+                                        <SkeletonText />
+                                    </TableCell>
+                                    <TableCell>
+                                        <SkeletonText />
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                customers.map((customer) => (
+                                    <TableRow
+                                        key={customer.client_id}
+                                        onClick={() => null}
+                                    >
                                         <TableCell>{customer.name}</TableCell>
                                         <TableCell>{customer.email}</TableCell>
                                         <TableCell>{customer.phone}</TableCell>
-                                        <TableCell>{getCompanyName(customer.company_id)}</TableCell>
+                                        <TableCell>
+                                            {getCompanyName(customer.company_id)}
+                                        </TableCell>
                                         <TableCell className="actions">
                                             <Button
                                                 className="button-borderless"
                                                 kind="tertiary"
                                                 renderIcon={Edit}
                                                 onClick={() =>
-                                                    handleEditCustomer(
-                                                        customer.client_id,
-                                                        customer.name,
-                                                        customer.last_name,
-                                                        customer.email,
-                                                        customer.phone,
-                                                        customer.company_id
-                                                    )
+                                                    handleEditCustomer({
+                                                        id: customer.client_id,
+                                                        name: customer.name,
+                                                        lastName: customer.last_name,
+                                                        email: customer.email,
+                                                        phone: customer.phone,
+                                                        company: customer.company_id,
+                                                    })
                                                 }
                                             >
                                                 Editar
@@ -333,25 +376,39 @@ const CustomersPage = () => {
                                             <Button
                                                 kind="danger--ghost"
                                                 renderIcon={TrashCan}
-                                                onClick={() => handleTrashCanCustomer(customer.client_id)}
+                                                onClick={() =>
+                                                    handleTrashCanCustomer(customer.client_id)
+                                                }
                                             >
                                                 Eliminar
                                             </Button>
                                             <Button
                                                 kind="primary"
                                                 renderIcon={Task}
-                                                onClick={() => handleOpenProjectModal(customer.client_id)}
+                                                onClick={() =>
+                                                    handleOpenProjectModal(customer.client_id)
+                                                }
                                             >
                                                 Asignar proyectos
                                             </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))
-                            }
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Pagination totalItems={customers.length} pageSizes={[10, 15, 20]} onChange={handlePageChange} />
+                <Pagination
+                    totalItems={totalItems}
+                    pageSizes={[10, 15, 20]}
+                    onChange={handlePageChange}
+                    page={currentPage}
+                    pageSize={customersPerPage}
+                    itemsPerPageText="Clientes por página"
+                    itemText={() => 'Clientes'}
+                    pageNumberText="Página"
+                    pageText={() => 'Página'}
+                />
             </div>
 
             <Modal
@@ -368,41 +425,55 @@ const CustomersPage = () => {
                     <TextInput
                         id="edit-customer-name"
                         labelText="Nombre"
-                        value={editCustomerName}
-                        onChange={(e) => setEditCustomerName(e.target.value)}
+                        value={editCustomer.name}
+                        onChange={(e) =>
+                            setEditCustomer({ ...editCustomer, name: e.target.value })
+                        }
                         disabled={loading}
                     />
                     <TextInput
                         id="edit-customer-lastname"
                         labelText="Apellido"
-                        value={editCustomerLastName}
-                        onChange={(e) => setEditCustomerLastName(e.target.value)}
+                        value={editCustomer.lastName}
+                        onChange={(e) =>
+                            setEditCustomer({ ...editCustomer, lastName: e.target.value })
+                        }
                         disabled={loading}
                     />
                     <TextInput
                         id="edit-customer-email"
                         labelText="Correo electrónico"
-                        value={editCustomerEmail}
-                        onChange={(e) => setEditCustomerEmail(e.target.value)}
+                        value={editCustomer.email}
+                        onChange={(e) =>
+                            setEditCustomer({ ...editCustomer, email: e.target.value })
+                        }
                         disabled={loading}
                     />
                     <TextInput
                         id="edit-customer-phone"
                         labelText="Teléfono"
-                        value={editCustomerPhone}
-                        onChange={(e) => setEditCustomerPhone(e.target.value)}
+                        value={editCustomer.phone}
+                        onChange={(e) =>
+                            setEditCustomer({ ...editCustomer, phone: e.target.value })
+                        }
                         disabled={loading}
                     />
                     <Select
                         id="edit-customer-company"
                         labelText="Compañía"
-                        value={editCustomerCompany}
-                        onChange={(e) => setEditCustomerCompany(e.target.value)}
+                        value={editCustomer.company}
+                        onChange={(e) =>
+                            setEditCustomer({ ...editCustomer, company: e.target.value })
+                        }
                         disabled={loading}
                     >
                         <SelectItem />
                         {companies.map((company) => (
-                            <SelectItem key={company.company_id} value={company.company_id} text={company.name} />
+                            <SelectItem
+                                key={company.company_id}
+                                value={company.company_id}
+                                text={company.name}
+                            />
                         ))}
                     </Select>
                 </Form>
@@ -448,7 +519,9 @@ const CustomersPage = () => {
                                             id={`project-checkbox-${project.project_id}`}
                                             labelText=""
                                             checked={selectedProjects.includes(project.project_id)}
-                                            onChange={() => handleCheckboxChange(project.project_id)}
+                                            onChange={() =>
+                                                handleCheckboxChange(project.project_id)
+                                            }
                                             disabled={loading}
                                         />
                                     </TableCell>
@@ -458,7 +531,6 @@ const CustomersPage = () => {
                     </Table>
                 </TableContainer>
             </Modal>
-
 
             {notification.isOpen && (
                 <Notification

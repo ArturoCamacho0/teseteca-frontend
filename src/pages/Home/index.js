@@ -71,7 +71,7 @@ const Home = () => {
         })
             .then(response => response.json())
             .then(data => {
-                setCustomersCount(data.length);
+                setCustomersCount(data.total);
             })
             .catch(error => {
                 console.log("Error fetching customers count:", error);
@@ -131,6 +131,7 @@ const Home = () => {
 
             <br /><br /><br />
             <h4>Proyectos próximos a sobrepasar la fecha l&iacute;mite:</h4>
+            {endingProjects.length === 0 && <p>No hay proyectos pr&oacute;ximos a sobrepasar la fecha l&iacute;mite.</p>}
             <ul>
                 {endingProjects.map(project => (
                     <li key={project.project_id}>

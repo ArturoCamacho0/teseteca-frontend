@@ -33,24 +33,35 @@ const ProjectsPage = () => {
     const [filteredProjects, setFilteredProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [projectsPerPage] = useState(10);
+    const [projectsPerPage, setProjectsPerPage] = useState(10);
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editProjectId, setEditProjectId] = useState(null);
-    const [editProjectName, setEditProjectName] = useState("");
-    const [editProjectDescription, setEditProjectDescription] = useState("");
-    const [editProjectStartDate, setEditProjectStartDate] = useState("");
-    const [editProjectEndDate, setEditProjectEndDate] = useState("");
-    const [editProjectUserId, setEditProjectUserId] = useState("");
+    const [editProject, setEditProject] = useState({
+        id: null,
+        name: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        userId: "",
+        status: "",
+    });
     const [trashCanModalOpen, setTrashCanModalOpen] = useState(false);
     const [trashCanProjectId, setTrashCanProjectId] = useState(null);
     const [error, setError] = useState('');
     const accessToken = useSelector((state) => state.auth.token);
     const [searchQuery, setSearchQuery] = useState('');
-    const [users, setUsers] = useState([]); // Users state
-    const [status, setStatus] = useState('');
+    const [users, setUsers] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
 
     const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
+        if (currentPage !== pageNumber.page) {
+            setCurrentPage(pageNumber.page);
+            fetchProjects(pageNumber.page, projectsPerPage);
+        }
+
+        if (projectsPerPage !== pageNumber.pageSize) {
+            setProjectsPerPage(pageNumber.pageSize);
+            fetchProjects(currentPage, pageNumber.pageSize);
+        }
     };
 
     const indexOfLastProject = currentPage * projectsPerPage;
@@ -63,19 +74,20 @@ const ProjectsPage = () => {
             navigate("/login");
         }
 
-        fetchProjects();
+        fetchProjects(currentPage, projectsPerPage);
         fetchUsers();
     }, []);
 
-    const fetchProjects = async () => {
+    const fetchProjects = async (page, perPage) => {
         setLoading(true);
         try {
-            const response = await axios.get("https://tesegewalt.website/api/projects", {
+            const response = await axios.get(`https://tesegewalt.website/api/projects?page=${page}&perPage=${perPage}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
             });
-            setProjects(response.data);
+            setProjects(response.data.data);
+            setTotalItems(response.data.total);
             setLoading(false);
         } catch (error) {
             console.error("Error al obtener los proyectos:", error);
@@ -99,22 +111,9 @@ const ProjectsPage = () => {
         }
     };
 
-    useEffect(() => {
-        const filtered = projects.filter((project) =>
-            project.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setFilteredProjects(filtered);
-    }, [projects, searchQuery]);
-
-    const handleEditProject = (projectId, projectName, projectDescription, startDate, endDate, userId, editStatus) => {
+    const handleEditProject = (project) => {
         setEditModalOpen(true);
-        setEditProjectId(projectId);
-        setEditProjectName(projectName);
-        setEditProjectDescription(projectDescription);
-        setEditProjectStartDate(startDate);
-        setEditProjectEndDate(endDate);
-        setEditProjectUserId(userId);
-        setStatus(editStatus);
+        setEditProject(project);
     };
 
     const handleTrashCanProject = (projectId) => {
@@ -126,15 +125,15 @@ const ProjectsPage = () => {
         setLoading(true);
         try {
             const projectData = {
-                name: editProjectName,
-                description: editProjectDescription,
-                start_date: editProjectStartDate,
-                status: status,
-                end_date: editProjectEndDate,
-                user_id: editProjectUserId
+                name: editProject.name,
+                description: editProject.description,
+                start_date: editProject.startDate,
+                status: editProject.status,
+                end_date: editProject.endDate,
+                user_id: editProject.userId
             };
 
-            await axios.put(`https://tesegewalt.website/api/projects/${editProjectId}`, projectData, {
+            await axios.put(`https://tesegewalt.website/api/projects/${editProject.id}`, projectData, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -142,13 +141,13 @@ const ProjectsPage = () => {
 
             setEditModalOpen(false);
             setLoading(false);
-            fetchProjects();
-            setError({ message: 'Proyecto guardado exitosamente', type: 'success' }); // Show success notification
+            fetchProjects(currentPage, projectsPerPage);
+            setError({ message: 'Proyecto guardado exitosamente', type: 'success' });
         } catch (error) {
             setLoading(false);
             console.error("Error al guardar el proyecto:", error);
             setEditModalOpen(false);
-            setError({ message: 'Error al guardar el proyecto', type: 'error' }); // Show error notification
+            setError({ message: 'Error al guardar el proyecto', type: 'error' });
         }
     };
 
@@ -162,16 +161,15 @@ const ProjectsPage = () => {
             });
             setLoading(false);
             setTrashCanModalOpen(false);
-            fetchProjects();
-            setError({ message: 'Proyecto eliminado exitosamente', type: 'success' }); // Show success notification
+            fetchProjects(currentPage, projectsPerPage);
+            setError({ message: 'Proyecto eliminado exitosamente', type: 'success' });
         } catch (error) {
             setLoading(false);
             console.error("Error al eliminar el proyecto:", error);
             setTrashCanModalOpen(false);
-            setError({ message: 'Error al eliminar el proyecto', type: 'error' }); // Show error notification
+            setError({ message: 'Error al eliminar el proyecto', type: 'error' });
         }
     };
-
 
     const currentProjects = filteredProjects.slice(
         indexOfFirstProject,
@@ -213,7 +211,7 @@ const ProjectsPage = () => {
                                 </TableHeader>
                                 <TableHeader>Encargado</TableHeader>
                                 <TableHeader isSortable={true}>
-                                    Tareas finalizadas: 
+                                    Tareas finalizadas:
                                 </TableHeader>
                                 <TableHeader className="table-header">
                                     Acciones
@@ -228,7 +226,7 @@ const ProjectsPage = () => {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                currentProjects.map((project) => (
+                                projects.map((project) => (
                                     <TableRow key={project.project_id}>
                                         <TableCell align="center">
                                             <Link href={'/projects/' + project.project_id}>
@@ -256,15 +254,7 @@ const ProjectsPage = () => {
                                                 kind="tertiary"
                                                 renderIcon={Edit}
                                                 onClick={() =>
-                                                    handleEditProject(
-                                                        project.project_id,
-                                                        project.name,
-                                                        project.description,
-                                                        project.start_date,
-                                                        project.end_date,
-                                                        project.user_id,
-                                                        project.status
-                                                    )
+                                                    handleEditProject(project)
                                                 }
                                             >
                                                 Editar
@@ -288,9 +278,13 @@ const ProjectsPage = () => {
                     </Table>
                 </TableContainer>
                 <Pagination
-                    totalItems={filteredProjects.length}
+                    totalItems={totalItems}
                     pageSizes={[10, 15, 20]}
                     onChange={handlePageChange}
+                    page={currentPage}
+                    pageSize={projectsPerPage}
+                    itemsPerPageText="Proyectos por página"
+                    pageNumberText="Página"
                 />
             </div>
 
@@ -308,23 +302,23 @@ const ProjectsPage = () => {
                     <TextInput
                         id="edit-project-name"
                         labelText="Nombre del Proyecto"
-                        value={editProjectName}
-                        onChange={(e) => setEditProjectName(e.target.value)}
+                        value={editProject.name}
+                        onChange={(e) => setEditProject({ ...editProject, name: e.target.value })}
                         disabled={loading}
                     />
                     <TextInput
                         id="edit-project-description"
                         labelText="Descripción del Proyecto"
-                        value={editProjectDescription}
-                        onChange={(e) => setEditProjectDescription(e.target.value)}
+                        value={editProject.description}
+                        onChange={(e) => setEditProject({ ...editProject, description: e.target.value })}
                         disabled={loading}
                     />
                     <DatePicker
                         datePickerType="single"
                         dateFormat="m/d/Y"
                         id="edit-project-start-date"
-                        onChange={(e) => setEditProjectStartDate(e[0].toISOString().split("T")[0])}
-                        value={editProjectStartDate}
+                        onChange={(e) => setEditProject({ ...editProject, startDate: e[0].toISOString().split("T")[0] })}
+                        value={editProject.startDate}
                         disabled={loading}
                     >
                         <DatePickerInput
@@ -336,8 +330,8 @@ const ProjectsPage = () => {
                         datePickerType="single"
                         dateFormat="m/d/Y"
                         id="edit-project-end-date"
-                        onChange={(e) => setEditProjectEndDate(e[0].toISOString().split("T")[0])}
-                        value={editProjectEndDate}
+                        onChange={(e) => setEditProject({ ...editProject, endDate: e[0].toISOString().split("T")[0] })}
+                        value={editProject.endDate}
                         disabled={loading}
                     >
                         <DatePickerInput
@@ -348,8 +342,8 @@ const ProjectsPage = () => {
                     <Select
                         id="edit-project-user-id"
                         labelText="Encargado"
-                        value={editProjectUserId}
-                        onChange={(e) => setEditProjectUserId(e.target.value)}
+                        value={editProject.userId}
+                        onChange={(e) => setEditProject({ ...editProject, userId: e.target.value })}
                         disabled={loading}
                     >
                         <SelectItem />
@@ -364,8 +358,8 @@ const ProjectsPage = () => {
                     <Select
                         id="status"
                         labelText="Estado"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
+                        value={editProject.status}
+                        onChange={(e) => setEditProject({ ...editProject, status: e.target.value })}
                     >
                         <SelectItem />
                         <SelectItem text="Pendiente" value="pending" />

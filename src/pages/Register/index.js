@@ -25,6 +25,11 @@ const RegisterPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const token = useSelector((state) => state.auth.token);
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
 
     useEffect(() => {
         if(!token) {
@@ -53,9 +58,10 @@ const RegisterPage = () => {
                 email: username,
                 password: password,
             };
+            console.log(config);
 
             axios
-                .post('https://tesegewalt.website/api/register', registerData)
+                .post('https://tesegewalt.website/api/register', registerData, config)
                 .then((response) => {
                     setLoading(false);
                     const data = response.data;
